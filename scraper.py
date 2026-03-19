@@ -205,7 +205,8 @@ def load_data():
     return {
         "fish": {},
         "scrape_log": [],
-        "pages_scraped": []
+        "pages_scraped": [],
+        "latest_page_date": None,
     }
 
 
@@ -268,6 +269,14 @@ def run_scrape():
     pages_scraped_set = set(data.get("pages_scraped", []))
     new_fish_count = 0
 
+    # Track the most recent page date across all pages scraped this run
+    all_page_dates = [info["date"] for info in all_fish_found.values() if info.get("date")]
+    if all_page_dates:
+        latest_this_run = max(all_page_dates)
+        existing_latest = data.get("latest_page_date")
+        if not existing_latest or latest_this_run > existing_latest:
+            data["latest_page_date"] = latest_this_run
+
     for url, info in all_fish_found.items():
         pages_scraped_set.add(url)
         page_date = info["date"]
@@ -275,8 +284,9 @@ def run_scrape():
             if fish_name not in data["fish"]:
                 data["fish"][fish_name] = {"occurrences": []}
                 new_fish_count += 1
+            fish_entry = data["fish"][fish_name]
             # Add this date if not already recorded
-            occ = data["fish"][fish_name]["occurrences"]
+            occ = fish_entry.setdefault("occurrences", [])
             if page_date not in occ:
                 occ.append(page_date)
                 occ.sort()
