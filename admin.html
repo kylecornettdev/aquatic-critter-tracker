@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aquatic Critter — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0d1117;--surface:#131920;--border:#1e2d3d;--accent:#4fc3a1;--accent2:#2a7d6f;--water:#1a3a4a;--text:#e8eef3;--muted:#8fa8bb;--danger:#f0855a;--warn:#e8c55a;--serif:'Playfair Display',Georgia,serif;--mono:'DM Mono',monospace;--sans:'DM Sans',system-ui,sans-serif;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 40% at 20% 80%,#0a2535 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 20%,#0d1f2d 0%,transparent 50%);pointer-events:none;z-index:0;}
+  .wrapper{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 24px 60px;}
+
+  header{padding:40px 0 32px;border-bottom:1px solid var(--border);margin-bottom:32px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .header-left h1{font-family:var(--serif);font-size:26px;font-weight:600;color:#fff;}
+  .header-left h1 span{color:var(--accent);}
+  .header-left .subtitle{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:6px;}
+  .nav-links{display:flex;gap:8px;}
+  .nav-link{font-family:var(--mono);font-size:11px;color:var(--text);text-decoration:none;border:1px solid var(--border);padding:7px 14px;border-radius:3px;transition:border-color 0.15s,color 0.15s;}
+  .nav-link:hover{border-color:var(--accent);color:var(--accent);}
+
+  .section-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:24px;margin-bottom:24px;}
+  .section-title{font-family:var(--mono);font-size:10px;color:var(--text);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+
+  .scrape-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  #update-btn{background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:var(--mono);font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:10px 24px;cursor:pointer;border-radius:3px;transition:background 0.2s,color 0.2s,transform 0.1s;white-space:nowrap;}
+  #update-btn:hover{background:var(--accent);color:var(--bg);}
+  #update-btn:active{transform:scale(0.97);}
+  #update-btn.loading{opacity:0.5;cursor:not-allowed;}
+  #scrape-status{font-family:var(--mono);font-size:11px;color:var(--text);flex:1;}
+  #scrape-status.busy{color:var(--warn);}
+  #scrape-status.ok{color:var(--accent);}
+  #scrape-status.err{color:var(--danger);}
+
+  .log-table{width:100%;border-collapse:collapse;margin-top:12px;}
+  .log-table th{padding:8px 12px;text-align:left;font-family:var(--mono);font-size:9px;color:var(--text);letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+  .log-table th:not(:first-child){text-align:center;}
+  .log-table td{padding:8px 12px;font-family:var(--mono);font-size:11px;color:var(--text);border-bottom:1px solid #151f2a;}
+  .log-table td:not(:first-child){text-align:center;}
+  .log-table td.changed{color:var(--accent);}
+  .log-table td.no-change{color:var(--muted);}
+  .log-table td.has-queue{color:var(--warn);}
+
+  .progress-bar{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;}
+  .progress-track{flex:1;height:4px;background:var(--water);border-radius:2px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.4s ease;}
+  .progress-label{font-family:var(--mono);font-size:12px;color:var(--text);white-space:nowrap;}
+  .progress-label span{color:var(--accent);}
+
+  /* Queue card - simplified */
+  .queue-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:24px;margin-bottom:12px;}
+  .raw-name{font-family:var(--serif);font-size:22px;color:#fff;margin-bottom:4px;}
+  .raw-meta{font-family:var(--mono);font-size:11px;color:var(--text);margin-bottom:10px;}
+  .similar-hint{font-family:var(--mono);font-size:11px;color:var(--warn);background:rgba(232,197,90,0.08);border:1px solid rgba(232,197,90,0.2);border-radius:3px;padding:8px 12px;margin-bottom:20px;}
+  .similar-hint strong{color:var(--warn);}
+  .similar-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .similar-names{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:0;}
+  .similar-chip{font-family:var(--mono);font-size:11px;background:rgba(232,197,90,0.1);border:1px solid rgba(232,197,90,0.25);color:var(--warn);padding:3px 10px;border-radius:2px;}
+
+  .queue-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
+  .btn-individual{width:100%;padding:12px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-family:var(--mono);font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:3px;transition:background 0.15s;}
+  .btn-individual:hover{background:var(--accent);color:var(--bg);}
+  .btn-flag{width:100%;padding:12px;border:1px solid var(--warn);background:transparent;color:var(--warn);font-family:var(--mono);font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:3px;transition:background 0.15s;}
+  .btn-flag:hover{background:rgba(232,197,90,0.15);}
+
+  .name-edit{width:100%;background:var(--water);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--sans);font-size:14px;padding:9px 12px;outline:none;margin-bottom:16px;transition:border-color 0.2s;}
+  .name-edit:focus{border-color:var(--accent);}
+
+  .card-footer{display:flex;justify-content:flex-end;margin-top:10px;}
+  .skip-btn{background:transparent;border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;cursor:pointer;border-radius:2px;}
+  .skip-btn:hover{border-color:var(--muted);color:#fff;}
+
+  .done-state{text-align:center;padding:48px 20px;}
+  .done-state .icon{font-size:40px;margin-bottom:14px;}
+  .done-state h2{font-family:var(--serif);font-size:20px;color:#fff;margin-bottom:8px;}
+  .done-state p{font-size:13px;color:var(--text);line-height:1.6;}
+  .done-state a{color:var(--accent);text-decoration:none;}
+
+  #flash{font-family:var(--mono);font-size:11px;min-height:18px;margin-bottom:16px;}
+  #flash.ok{color:var(--accent);}
+  #flash.err{color:var(--danger);}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <div class="header-left">
+      <h1>🐠 Aquatic Critter <span>Admin</span></h1>
+      <div class="subtitle">Scrape controls &amp; review queue</div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="/library">📚 Library</a>
+      <a class="nav-link" href="/">← Dashboard</a>
+    </div>
+  </header>
+
+  <div id="flash"></div>
+
+  <div class="section-card">
+    <div class="section-title">
+      <span>Scrape Controls</span>
+      <span id="last-scraped" style="color:var(--muted);font-size:10px;">—</span>
+    </div>
+    <div class="scrape-row">
+      <button id="update-btn" onclick="triggerScrape()">⟳ Update Now</button>
+      <div id="scrape-status">Ready</div>
+    </div>
+    <div id="log-section" style="display:none;margin-top:20px;">
+      <table class="log-table">
+        <thead><tr><th>Time</th><th>Pages</th><th>New Fish</th><th>Total</th><th>Queue</th><th>Status</th></tr></thead>
+        <tbody id="log-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">
+      <span>Review Queue</span>
+      <span id="queue-count-label" style="color:var(--muted);font-size:10px;">Loading…</span>
+    </div>
+    <div class="progress-bar" id="progress-bar" style="display:none">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-label"><span id="progress-done">0</span> / <span id="progress-total">0</span> resolved</div>
+    </div>
+    <div id="queue-container"></div>
+  </div>
+</div>
+
+<script>
+let queue=[], fishNames=[], totalStart=0, selectedFish='', currentIndex=0, scrapeCheckInterval=null;
+
+async function init(){await loadLog();await loadQueue();}
+
+async function loadLog(){
+  try{
+    const data=await fetch('/api/data').then(r=>r.json());
+    const log=(data.scrape_log||[]).slice().reverse().slice(0,15);
+    const tbody=document.getElementById('log-tbody');
+    const section=document.getElementById('log-section');
+    const lastEl=document.getElementById('last-scraped');
+    if(log.length){
+      section.style.display='block';
+      const dt=new Date(log[0].timestamp);
+      lastEl.textContent='Last: '+dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+dt.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      tbody.innerHTML=log.map(e=>{
+        const dt2=new Date(e.timestamp);
+        const time=dt2.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+dt2.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+        const qCount=e.pending_queue||0;
+        return`<tr><td>${time}</td><td>${e.pages_checked||0}</td><td>${e.new_fish||0}</td><td>${e.total_fish||0}</td><td class="${qCount>0?'has-queue':''}">${qCount>0?qCount:'—'}</td><td class="${e.changed?'changed':'no-change'}">${e.changed?'Updated':'No change'}</td></tr>`;
+      }).join('');
+    }
+  }catch(e){}
+}
+
+async function loadQueue(){
+  try{
+    const data=await fetch('/api/queue').then(r=>r.json());
+    queue=data.queue||[];fishNames=data.fish_names||[];
+    totalStart=Math.max(totalStart,queue.length);
+    currentIndex=0;
+    document.getElementById('queue-count-label').textContent=`${queue.length} item${queue.length!==1?'s':''} pending`;
+    renderQueue();
+  }catch(e){setFlash('err','Could not load queue');}
+}
+
+function renderQueue(){
+  const container=document.getElementById('queue-container');
+  const progressBar=document.getElementById('progress-bar');
+  if(!queue.length){
+    progressBar.style.display='none';
+    container.innerHTML=`<div class="done-state"><div class="icon">✅</div><h2>Queue is clear!</h2><p>All entries reviewed.<br><a href="/">Return to dashboard</a> · <a href="/library">Open library to review flagged dupes</a></p></div>`;
+    return;
+  }
+  progressBar.style.display='flex';
+  const done=totalStart-queue.length;
+  document.getElementById('progress-done').textContent=done;
+  document.getElementById('progress-total').textContent=totalStart;
+  document.getElementById('progress-fill').style.width=`${totalStart>0?(done/totalStart)*100:0}%`;
+
+  const item=queue[currentIndex]||queue[0];
+  const similarTo=item.similar_to||[];
+
+  const similarHtml=similarTo.length?`
+    <div class="similar-hint">
+      <div class="similar-label">Possibly similar to</div>
+      <div class="similar-names">${similarTo.map(s=>`<span class="similar-chip">${escHtml(s)}</span>`).join('')}</div>
+    </div>`:'';
+
+  container.innerHTML=`
+    <div class="queue-card">
+      <div class="raw-name">${escHtml(item.raw)}</div>
+      <div class="raw-meta">Seen: <span>${item.seen_on||'—'}</span> &nbsp;·&nbsp; ${queue.length} remaining</div>
+      ${similarHtml}
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Edit name if needed</div>
+      <input type="text" class="name-edit" id="name-edit" value="${escHtml(item.raw)}">
+      <div class="queue-actions">
+        <button class="btn-individual" onclick="resolve('individual')">✓ Keep as Individual</button>
+        <button class="btn-flag" onclick="resolve('flag')">⚑ Flag as Potential Dupe</button>
+      </div>
+      <div class="card-footer"><button class="skip-btn" onclick="skipItem()">Skip →</button></div>
+    </div>`;
+}
+
+async function resolve(action){
+  const item=queue[currentIndex]||queue[0];
+  const nameInput=document.getElementById('name-edit');
+  const name=nameInput?nameInput.value.trim():item.raw;
+  const payload={raw:item.raw,action,name};
+  try{
+    const result=await fetch('/api/resolve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json());
+    if(result.status==='ok'){
+      queue.splice(currentIndex,1);
+      if(currentIndex>=queue.length)currentIndex=0;
+      document.getElementById('queue-count-label').textContent=`${queue.length} item${queue.length!==1?'s':''} pending`;
+      renderQueue();
+      setFlash('ok',action==='flag'?`"${name}" flagged as potential dupe`:`"${name}" added`);
+    }else setFlash('err',result.message||'Error');
+  }catch(e){setFlash('err','Server error');}
+}
+function skipItem(){currentIndex=(currentIndex+1)%queue.length;renderQueue();}
+
+async function triggerScrape(){
+  const btn=document.getElementById('update-btn');
+  btn.classList.add('loading');btn.textContent='⟳ Scraping…';
+  setScrapeStatus('busy','Scraping pages… this may take a minute');
+  try{
+    const result=await fetch('/api/scrape').then(r=>r.json());
+    if(result.status==='cooldown'){btn.classList.remove('loading');btn.textContent='⟳ Update Now';setScrapeStatus('','Try again in '+result.minutes_remaining+' min');return;}
+  }catch(e){setScrapeStatus('err','Server error');btn.classList.remove('loading');btn.textContent='⟳ Update Now';return;}
+
+  const logLengthBefore=(await fetch('/api/data').then(r=>r.json())).scrape_log?.length||0;
+  let polls=0;
+  scrapeCheckInterval=setInterval(async()=>{
+    polls++;
+    try{
+      const data=await fetch('/api/data').then(r=>r.json());
+      const log=data.scrape_log||[];
+      if(log.length>logLengthBefore||polls>36){
+        clearInterval(scrapeCheckInterval);
+        btn.classList.remove('loading');btn.textContent='⟳ Update Now';
+        const last=log[log.length-1];
+        const pending=(data.pending_queue||[]).length;
+        let msg=last?.changed?`Done — ${last.new_fish} new species`:'Done — no changes';
+        if(pending>0)msg+=` · ${pending} need review`;
+        setScrapeStatus('ok',msg);
+        await loadLog();await loadQueue();
+      }
+    }catch(e){}
+  },5000);
+}
+
+function setScrapeStatus(cls,msg){const el=document.getElementById('scrape-status');el.className=cls;el.textContent=msg;}
+function setFlash(cls,msg){const el=document.getElementById('flash');el.textContent=msg;el.className=cls;setTimeout(()=>{if(el.textContent===msg){el.textContent='';el.className='';}},4000);}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(s){return String(s).replace(/'/g,"\\'");}
+init();
+</script>
+</body>
+</html>

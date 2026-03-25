@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNS 5N Aquascape Planner</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --tank-bg: #c8e8f0;
+    --grid-minor: rgba(0,80,120,0.08);
+    --grid-major: rgba(0,80,120,0.18);
+    --panel-bg: #f7f5f0;
+    --border: #d0cac0;
+    --text: #2a2520;
+    --muted: #7a7068;
+    --accent: #2a6e5a;
+    --accent-light: #e8f4ef;
+  }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: #ede9e2;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  h1 {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .app {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .main-col {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .toolbar button {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    background: var(--panel-bg);
+    color: var(--text);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .toolbar button:hover { background: #ede9e2; }
+  .toolbar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  #coords {
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    min-height: 14px;
+    letter-spacing: 0.3px;
+  }
+
+  #tank-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  #tank-canvas {
+    position: relative;
+    border: 2px solid #4a7a8a;
+    border-radius: 3px;
+    background: var(--tank-bg);
+    overflow: visible;
+    cursor: default;
+  }
+
+  .grid-line { position: absolute; pointer-events: none; }
+
+  .piece {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    user-select: none;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    text-align: center;
+    line-height: 1.25;
+    box-sizing: border-box;
+    border: 1.5px solid rgba(0,0,0,0.25);
+    transition: outline 0.1s;
+  }
+
+  .piece:active { cursor: grabbing; }
+  .piece.selected { outline: 2px solid #2a6e5a; outline-offset: 2px; z-index: 100; }
+  .piece.circle { border-radius: 50%; }
+
+  .tray-section {
+    margin-top: 14px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .tray-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .tray {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tray-piece {
+    cursor: grab;
+    border-radius: 3px;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    padding: 4px 8px;
+    border: 1.5px solid rgba(0,0,0,0.2);
+    white-space: nowrap;
+    user-select: none;
+    transition: opacity 0.15s;
+  }
+
+  .tray-piece:hover { opacity: 0.85; }
+
+  .side-panel {
+    width: 180px;
+    flex-shrink: 0;
+  }
+
+  .panel-box {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .panel-title {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  #piece-list { list-style: none; }
+
+  #piece-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #e8e4dc;
+    font-size: 11px;
+  }
+
+  #piece-list li:last-child { border-bottom: none; }
+
+  .piece-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-right: 6px;
+    border: 1px solid rgba(0,0,0,0.2);
+  }
+
+  .piece-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .remove-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    width: 18px;
+    height: 18px;
+    border: none;
+    background: none;
+    color: #c0392b;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .remove-btn:hover { background: #fce8e6; }
+
+  .pos-info {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 8px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+    font-size: 10px;
+    color: var(--text);
+  }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.2);
+  }
+
+  .legend-dot.circle { border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<h1>Aquascape Planner</h1>
+<div class="subtitle">UNS 5N · 30cm × 18cm · 1 cell = 1cm</div>
+
+<div class="app">
+  <div class="main-col">
+    <div class="toolbar">
+      <button onclick="resetAll()">Reset</button>
+      <button id="grid-btn" class="active" onclick="toggleGrid()">Grid on</button>
+      <button onclick="clearAll()">Clear all</button>
+    </div>
+    <div id="coords">Drag pieces to reposition — snaps to 1cm grid</div>
+    <div id="tank-wrap">
+      <div id="tank-canvas"></div>
+    </div>
+
+    <div class="tray-section">
+      <div class="tray-label">Piece tray — drag onto canvas to add</div>
+      <div class="tray" id="tray"></div>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <div class="panel-box">
+      <div class="panel-title">On canvas</div>
+      <ul id="piece-list"></ul>
+      <div class="pos-info" id="sel-info"></div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-title">Legend</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6B4020"></div>DW2 orange cliff</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8B6035"></div>DW1 pink forked</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#378ADD"></div>Inflow pipe</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Outflow pipe</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#D85A30"></div>Heater</div>
+      <div class="legend-item"><div class="legend-dot circle" style="background:#EAF3DE;border-color:#3B6D11"></div>CO2 diffuser</div>
+      <div class="legend-item"><div class="legend-dot circle" style="background:#EEEDFE;border-color:#534AB7"></div>Drop checker</div>
+      <div class="legend-item"><div class="legend-dot circle" style="background:#1a5010"></div>Christmas moss</div>
+      <div class="legend-item"><div class="legend-dot circle" style="background:#c8d832;border-color:#7a8a10"></div>Anubias golden</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4a8022"></div>Pearlweed</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#5a8a30"></div>Blyxa/corkscrew</div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-title">Back</div>
+      <div style="font-size:10px;color:var(--muted);line-height:1.6;">
+        Top of grid = back glass<br>
+        Bottom = front glass<br>
+        Left = left side<br>
+        Right = right side
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CM = 16;
+const COLS = 30;
+const ROWS = 18;
+const W = COLS * CM;
+const H = ROWS * CM;
+
+const canvas = document.getElementById('tank-canvas');
+canvas.style.width = W + 'px';
+canvas.style.height = H + 'px';
+
+const PIECES_DEF = [
+  { id:'dw2',      label:'DW2\n12×8',  w:12, h:8,  shape:'rect',   color:'#6B4020', textColor:'#f5e6c8', cx:9,  cy:6  },
+  { id:'dw1',      label:'DW1\n10×6',  w:10, h:6,  shape:'rect',   color:'#8B6035', textColor:'#f5e6c8', cx:20, cy:12 },
+  { id:'inflow',   label:'IN',         w:2,  h:4,  shape:'rect',   color:'#378ADD', textColor:'#042C53', cx:25, cy:5  },
+  { id:'outflow',  label:'OUT',        w:2,  h:2,  shape:'rect',   color:'#1D9E75', textColor:'#04342C', cx:7,  cy:3  },
+  { id:'heater',   label:'H',          w:1,  h:6,  shape:'rect',   color:'#D85A30', textColor:'#fff',    cx:27, cy:7  },
+  { id:'co2',      label:'CO2',        w:2,  h:2,  shape:'circle', color:'#EAF3DE', textColor:'#27500A', cx:22, cy:12 },
+  { id:'dc',       label:'DC',         w:2,  h:2,  shape:'circle', color:'#EEEDFE', textColor:'#26215C', cx:10, cy:12 },
+  { id:'moss',     label:'moss',       w:3,  h:3,  shape:'circle', color:'#1a5010', textColor:'#c8f0a0', cx:10, cy:8  },
+  { id:'anubias1', label:'A1',         w:2,  h:2,  shape:'circle', color:'#c8d832', textColor:'#3d4408', cx:20, cy:10 },
+  { id:'anubias2', label:'A2',         w:2,  h:2,  shape:'circle', color:'#c8d832', textColor:'#3d4408', cx:11, cy:7  },
+  { id:'pearlweed',label:'pearl',      w:6,  h:2,  shape:'rect',   color:'#4a8022', textColor:'#d0f090', cx:15, cy:16 },
+  { id:'blyxa',    label:'blyxa',      w:2,  h:4,  shape:'rect',   color:'#5a8a30', textColor:'#d0f090', cx:24, cy:4  },
+];
+
+let selected = null;
+let dragging = null;
+let dragOff = {x:0, y:0};
+let showGrid = true;
+let pieces = [];
+
+function snap(v) { return Math.round(v / CM) * CM; }
+function clamp(v, mn, mx) { return Math.min(Math.max(v, mn), mx); }
+
+function makePieceEl(def, px, py) {
+  const uid = def.id + '_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  const el = document.createElement('div');
+  el.className = 'piece' + (def.shape === 'circle' ? ' circle' : '');
+  el.style.width  = (def.w * CM) + 'px';
+  el.style.height = (def.h * CM) + 'px';
+  el.style.background = def.color;
+  el.style.color = def.textColor;
+  el.style.left = snap(clamp(px, 0, W - def.w * CM)) + 'px';
+  el.style.top  = snap(clamp(py, 0, H - def.h * CM)) + 'px';
+  el.innerHTML = def.label.replace('\n','<br>');
+  el.dataset.uid   = uid;
+  el.dataset.defId = def.id;
+
+  el.addEventListener('mousedown', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    selectPiece(uid);
+    const rect = canvas.getBoundingClientRect();
+    dragOff.x = e.clientX - rect.left - parseInt(el.style.left);
+    dragOff.y = e.clientY - rect.top  - parseInt(el.style.top);
+    dragging = el;
+    el.style.zIndex = 50;
+  });
+
+  canvas.appendChild(el);
+  pieces.push({ uid, defId: def.id, el });
+  renderList();
+  return el;
+}
+
+function selectPiece(uid) {
+  if (selected) {
+    const prev = pieces.find(p => p.uid === selected);
+    if (prev) prev.el.classList.remove('selected');
+  }
+  selected = uid;
+  if (uid) {
+    const p = pieces.find(p => p.uid === uid);
+    if (p) {
+      p.el.classList.add('selected');
+      updateCoords(p.el, p.defId);
+    }
+  } else {
+    document.getElementById('coords').textContent = 'Drag pieces to reposition — snaps to 1cm grid';
+    document.getElementById('sel-info').textContent = '';
+  }
+  renderList();
+}
+
+function updateCoords(el, defId) {
+  const def = PIECES_DEF.find(d => d.id === defId);
+  const cx = Math.round(parseInt(el.style.left) / CM);
+  const cy = Math.round(parseInt(el.style.top)  / CM);
+  document.getElementById('coords').textContent =
+    `${def.label.replace('\n',' ')} — X:${cx} Y:${cy} | ${def.w}×${def.h}cm`;
+  document.getElementById('sel-info').textContent =
+    `Selected: ${def.label.replace('\n',' ')}\nX:${cx} Y:${cy}`;
+}
+
+function removePiece(uid) {
+  const idx = pieces.findIndex(p => p.uid === uid);
+  if (idx === -1) return;
+  pieces[idx].el.remove();
+  pieces.splice(idx, 1);
+  if (selected === uid) selectPiece(null);
+  renderList();
+}
+
+function renderList() {
+  const ul = document.getElementById('piece-list');
+  ul.innerHTML = '';
+  pieces.forEach(p => {
+    const def = PIECES_DEF.find(d => d.id === p.defId);
+    const li = document.createElement('li');
+    li.style.background = p.uid === selected ? '#f0ece4' : '';
+    li.innerHTML = `
+      <div class="piece-dot" style="background:${def.color};${def.shape==='circle'?'border-radius:50%;':''}"></div>
+      <span class="piece-name">${def.label.replace('\n',' ')}</span>
+      <button class="remove-btn" title="Remove" onclick="removePiece('${p.uid}')">×</button>
+    `;
+    li.style.cursor = 'pointer';
+    li.addEventListener('click', e => {
+      if (e.target.classList.contains('remove-btn')) return;
+      selectPiece(p.uid);
+      p.el.scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+    ul.appendChild(li);
+  });
+}
+
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const rect = canvas.getBoundingClientRect();
+  const rawX = e.clientX - rect.left - dragOff.x;
+  const rawY = e.clientY - rect.top  - dragOff.y;
+  const maxX = W - parseInt(dragging.style.width);
+  const maxY = H - parseInt(dragging.style.height);
+  const snX = snap(clamp(rawX, 0, maxX));
+  const snY = snap(clamp(rawY, 0, maxY));
+  dragging.style.left = snX + 'px';
+  dragging.style.top  = snY + 'px';
+  const p = pieces.find(p => p.el === dragging);
+  if (p) updateCoords(dragging, p.defId);
+});
+
+document.addEventListener('mouseup', () => {
+  if (dragging) {
+    dragging.style.zIndex = '';
+    dragging = null;
+    renderList();
+  }
+});
+
+canvas.addEventListener('mousedown', e => {
+  if (e.target === canvas) selectPiece(null);
+});
+
+function drawGrid() {
+  canvas.querySelectorAll('.grid-line').forEach(l => l.remove());
+  if (!showGrid) return;
+  for (let c = 0; c <= COLS; c++) {
+    const l = document.createElement('div');
+    l.className = 'grid-line';
+    const major = c % 5 === 0;
+    l.style.cssText = `left:${c*CM}px;top:0;width:1px;height:${H}px;background:${major?'var(--grid-major)':'var(--grid-minor)'};`;
+    canvas.insertBefore(l, canvas.firstChild);
+    if (major) {
+      const t = document.createElement('div');
+      t.className = 'grid-line';
+      t.style.cssText = `left:${c*CM}px;top:${H+2}px;width:20px;height:12px;font-size:9px;font-family:monospace;color:#6a8a96;`;
+      t.textContent = c;
+      canvas.appendChild(t);
+    }
+  }
+  for (let r = 0; r <= ROWS; r++) {
+    const l = document.createElement('div');
+    l.className = 'grid-line';
+    const major = r % 3 === 0;
+    l.style.cssText = `top:${r*CM}px;left:0;height:1px;width:${W}px;background:${major?'var(--grid-major)':'var(--grid-minor)'};`;
+    canvas.insertBefore(l, canvas.firstChild);
+    if (major) {
+      const t = document.createElement('div');
+      t.className = 'grid-line';
+      t.style.cssText = `top:${r*CM-6}px;left:-22px;width:20px;height:12px;font-size:9px;font-family:monospace;color:#6a8a96;text-align:right;`;
+      t.textContent = r;
+      canvas.appendChild(t);
+    }
+  }
+  const labels = [
+    {text:'back glass',  x:W/2, y:-16, anchor:'middle'},
+    {text:'front glass', x:W/2, y:H+18, anchor:'middle'},
+  ];
+  labels.forEach(lb => {
+    const t = document.createElement('div');
+    t.className = 'grid-line';
+    t.style.cssText = `left:${lb.x - 40}px;top:${lb.y}px;width:80px;height:14px;font-size:9px;font-family:monospace;color:#6a8a96;text-align:center;`;
+    t.textContent = lb.text;
+    canvas.appendChild(t);
+  });
+}
+
+function toggleGrid() {
+  showGrid = !showGrid;
+  const btn = document.getElementById('grid-btn');
+  btn.textContent = showGrid ? 'Grid on' : 'Grid off';
+  btn.classList.toggle('active', showGrid);
+  drawGrid();
+}
+
+function resetAll() {
+  pieces.forEach(p => p.el.remove());
+  pieces = [];
+  selected = null;
+  document.getElementById('coords').textContent = 'Drag pieces to reposition — snaps to 1cm grid';
+  document.getElementById('sel-info').textContent = '';
+  PIECES_DEF.forEach(def => {
+    makePieceEl(def, (def.cx - def.w/2) * CM, (def.cy - def.h/2) * CM);
+  });
+  drawGrid();
+}
+
+function clearAll() {
+  pieces.forEach(p => p.el.remove());
+  pieces = [];
+  selected = null;
+  document.getElementById('piece-list').innerHTML = '';
+  document.getElementById('coords').textContent = 'Canvas cleared — drag from tray to add pieces';
+  document.getElementById('sel-info').textContent = '';
+  drawGrid();
+}
+
+const tray = document.getElementById('tray');
+PIECES_DEF.forEach(def => {
+  const t = document.createElement('div');
+  t.className = 'tray-piece';
+  t.style.background = def.color;
+  t.style.color = def.textColor;
+  t.textContent = def.label.replace('\n',' ');
+  t.title = `Add ${def.label.replace('\n',' ')} to canvas`;
+  t.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const el = makePieceEl(def, CM, CM);
+    const uid = el.dataset.uid;
+    selectPiece(uid);
+    dragOff.x = 0;
+    dragOff.y = 0;
+    dragging = el;
+    el.style.zIndex = 50;
+  });
+  tray.appendChild(t);
+});
+
+resetAll();
+</script>
+</body>
+</html>

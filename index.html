@@ -8,189 +8,180 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:        #0d1117;
-    --surface:   #131920;
-    --border:    #1e2d3d;
-    --accent:    #4fc3a1;
-    --accent2:   #2a7d6f;
-    --water:     #1a3a4a;
-    --text:      #cdd9e5;
-    --muted:     #637a8a;
-    --highlight: #4fc3a11a;
-    --danger:    #f0855a;
-    --warn:      #e8c55a;
-    --star:      #f5c842;
-    --serif:     'Playfair Display', Georgia, serif;
-    --mono:      'DM Mono', monospace;
-    --sans:      'DM Sans', system-ui, sans-serif;
+    --bg:#0d1117;--surface:#131920;--border:#1e2d3d;--accent:#4fc3a1;
+    --accent2:#2a7d6f;--water:#1a3a4a;--text:#e8eef3;--muted:#8fa8bb;
+    --highlight:#4fc3a11a;--danger:#f0855a;--warn:#e8c55a;--star:#f5c842;
+    --serif:'Playfair Display',Georgia,serif;--mono:'DM Mono',monospace;
+    --sans:'DM Sans',system-ui,sans-serif;
   }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 40% at 20% 80%,#0a2535 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 20%,#0d1f2d 0%,transparent 50%);pointer-events:none;z-index:0;}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; min-height: 100vh; overflow-x: hidden; }
+  .bubbles{position:fixed;bottom:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:0;}
+  .bubble{position:absolute;bottom:-20px;border-radius:50%;background:rgba(79,195,161,0.06);border:1px solid rgba(79,195,161,0.1);animation:rise linear infinite;}
+  @keyframes rise{0%{transform:translateY(0) translateX(0) scale(1);opacity:0;}10%{opacity:1;}90%{opacity:0.4;}100%{transform:translateY(-100vh) translateX(20px) scale(1.1);opacity:0;}}
 
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background: radial-gradient(ellipse 80% 40% at 20% 80%, #0a2535 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 20%, #0d1f2d 0%, transparent 50%);
-    pointer-events: none; z-index: 0;
-  }
+  .wrapper{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 24px 60px;}
 
-  .bubbles { position: fixed; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
-  .bubble { position: absolute; bottom: -20px; border-radius: 50%; background: rgba(79,195,161,0.06); border: 1px solid rgba(79,195,161,0.1); animation: rise linear infinite; }
-  @keyframes rise { 0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 0.4; } 100% { transform: translateY(-100vh) translateX(20px) scale(1.1); opacity: 0; } }
+  header{padding:40px 0 32px;border-bottom:1px solid var(--border);margin-bottom:32px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .header-left h1{font-family:var(--serif);font-size:28px;font-weight:600;color:#fff;letter-spacing:-0.3px;line-height:1.1;}
+  .header-left h1 span{color:var(--accent);}
+  .header-left .subtitle{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:6px;}
+  .header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .last-update{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;}
+  .last-update .label{display:block;letter-spacing:1px;text-transform:uppercase;}
+  .last-update .time{color:var(--accent);font-size:12px;}
 
-  .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+  .nav-link{font-family:var(--mono);font-size:11px;text-decoration:none;border:1px solid var(--border);padding:9px 14px;border-radius:3px;white-space:nowrap;transition:border-color 0.15s,color 0.15s;position:relative;color:var(--text);}
+  .nav-link:hover{border-color:var(--accent);color:var(--accent);}
+  .queue-badge{position:absolute;top:-7px;right:-7px;background:var(--warn);color:#1a1200;font-size:9px;font-weight:600;padding:2px 5px;border-radius:8px;font-family:var(--mono);display:none;}
+  .queue-badge.visible{display:block;}
 
-  header { padding: 40px 0 32px; border-bottom: 1px solid var(--border); margin-bottom: 32px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .header-left h1 { font-family: var(--serif); font-size: 28px; font-weight: 600; color: #fff; letter-spacing: -0.3px; line-height: 1.1; }
-  .header-left h1 span { color: var(--accent); }
-  .header-left .subtitle { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 6px; }
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .last-update { font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; }
-  .last-update .label { display: block; letter-spacing: 1px; text-transform: uppercase; }
-  .last-update .time { color: var(--accent); font-size: 12px; }
+  #status-bar{font-family:var(--mono);font-size:11px;color:var(--muted);min-height:18px;margin-bottom:28px;display:flex;align-items:center;gap:8px;}
+  #status-bar .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+  #status-bar.ok .dot{background:var(--accent);}
+  #status-bar.busy .dot{background:var(--warn);animation:pulse 0.8s infinite;}
+  #status-bar.err .dot{background:var(--danger);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 
-  #update-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); font-family: var(--mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; padding: 9px 20px; cursor: pointer; border-radius: 3px; transition: background 0.2s, color 0.2s, transform 0.1s; white-space: nowrap; }
-  #update-btn:hover { background: var(--accent); color: var(--bg); }
-  #update-btn:active { transform: scale(0.97); }
-  #update-btn.loading { opacity: 0.5; cursor: not-allowed; }
+  .stats-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:32px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px;}
+  .stat-card .val{font-family:var(--mono);font-size:26px;font-weight:400;color:var(--accent);line-height:1;}
+  .stat-card .lbl{font-size:11px;color:var(--text);margin-top:5px;letter-spacing:0.5px;}
+  .stat-card.warn-card .val{color:var(--warn);}
 
-  #status-bar { font-family: var(--mono); font-size: 11px; color: var(--muted); min-height: 18px; margin-bottom: 28px; display: flex; align-items: center; gap: 8px; }
-  #status-bar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
-  #status-bar.ok   .dot { background: var(--accent); }
-  #status-bar.busy .dot { background: var(--warn); animation: pulse 0.8s infinite; }
-  #status-bar.err  .dot { background: var(--danger); }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  /* Favorites */
+  #favorites-section{margin-bottom:28px;display:none;}
+  #favorites-section.visible{display:block;}
+  .section-label{font-family:var(--mono);font-size:10px;color:var(--text);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .favorites-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+  .fav-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px 18px;cursor:pointer;transition:border-color 0.2s;}
+  .fav-card:hover{border-color:var(--accent2);}
+  .fav-card.in-stock{border-color:var(--accent);background:rgba(79,195,161,0.05);}
+  .fav-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;}
+  .fav-name{font-family:var(--serif);font-size:16px;color:#fff;line-height:1.2;}
+  .fav-unstar{background:none;border:none;cursor:pointer;color:var(--star);font-size:16px;padding:0;line-height:1;flex-shrink:0;opacity:0.8;transition:opacity 0.15s;}
+  .fav-unstar:hover{opacity:1;}
+  .fav-stock-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:2px;margin-bottom:8px;}
+  .fav-stock-badge.in-stock{background:rgba(79,195,161,0.15);color:var(--accent);}
+  .fav-stock-badge.not-seen{background:rgba(143,168,187,0.1);color:var(--muted);}
+  .fav-meta{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.9;}
+  .fav-meta span{color:var(--text);}
 
-  .stats-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 32px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 16px; }
-  .stat-card .val { font-family: var(--mono); font-size: 26px; font-weight: 400; color: var(--accent); line-height: 1; }
-  .stat-card .lbl { font-size: 11px; color: var(--muted); margin-top: 5px; letter-spacing: 0.5px; }
+  /* Search */
+  .search-wrap{position:relative;margin-bottom:24px;}
+  .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none;}
+  #search{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--sans);font-size:14px;padding:12px 16px 12px 42px;outline:none;transition:border-color 0.2s;}
+  #search:focus{border-color:var(--accent);}
+  #search::placeholder{color:var(--muted);}
+  .search-hint{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10px;color:var(--text);letter-spacing:1px;}
 
-  /* ── Favorites ── */
-  #favorites-section { margin-bottom: 28px; display: none; }
-  #favorites-section.visible { display: block; }
+  .controls{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .controls span{font-family:var(--mono);font-size:10px;color:var(--text);letter-spacing:1.5px;text-transform:uppercase;margin-right:4px;}
+  .sort-btn{background:transparent;border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;cursor:pointer;border-radius:2px;transition:border-color 0.15s,color 0.15s,background 0.15s;}
+  .sort-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .sort-btn.active{border-color:var(--accent);color:var(--bg);background:var(--accent);}
 
-  .section-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  /* Table */
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead tr{background:var(--water);border-bottom:1px solid var(--border);}
+  th{padding:11px 16px;text-align:left;font-family:var(--mono);font-size:10px;font-weight:400;color:var(--text);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;}
+  th:nth-child(n+3){text-align:center;}
+  tbody tr.fish-row{border-bottom:1px solid var(--border);transition:background 0.12s;cursor:pointer;}
+  tbody tr.fish-row:hover{background:var(--highlight);}
+  tbody tr.fish-row.soon-row{background:rgba(79,195,161,0.04);}
+  tbody tr.fish-row.expanded{background:rgba(79,195,161,0.07);border-bottom:none;}
+  tr.detail-row td{padding:0;border-bottom:1px solid var(--border);}
 
-  .favorites-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .detail-panel{padding:20px 20px 24px 56px;background:#0f1a23;animation:expandIn 0.18s ease;}
+  @keyframes expandIn{from{opacity:0;transform:translateY(-5px);}to{opacity:1;transform:translateY(0);}}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:24px;align-items:start;}
+  .detail-block .lbl{font-family:var(--mono);font-size:10px;color:var(--text);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
 
-  .fav-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 16px 18px; cursor: pointer; transition: border-color 0.2s; }
-  .fav-card:hover { border-color: var(--accent2); }
-  .fav-card.in-stock { border-color: var(--accent); background: rgba(79,195,161,0.05); }
+  .occ-timeline{display:flex;flex-wrap:wrap;gap:5px;}
+  .occ-pip{font-family:var(--mono);font-size:10px;background:var(--water);color:var(--text);padding:3px 8px;border-radius:2px;border:1px solid var(--border);}
+  .occ-pip.latest{background:rgba(79,195,161,0.15);color:var(--accent);border-color:var(--accent2);}
 
-  .fav-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
-  .fav-name { font-family: var(--serif); font-size: 16px; color: #fff; line-height: 1.2; }
-  .fav-unstar { background: none; border: none; cursor: pointer; color: var(--star); font-size: 16px; padding: 0; line-height: 1; flex-shrink: 0; opacity: 0.7; transition: opacity 0.15s; }
-  .fav-unstar:hover { opacity: 1; }
+  .detail-stats{line-height:2.1;font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .detail-stats .val{color:var(--text);}
+  .detail-stats .good{color:var(--accent);}
+  .detail-stats .no{color:var(--muted);}
+  .detail-stats .via{color:var(--warn);font-size:10px;}
 
-  .fav-stock-badge { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
-  .fav-stock-badge.in-stock { background: rgba(79,195,161,0.15); color: var(--accent); }
-  .fav-stock-badge.in-stock::before { content: '●'; font-size: 7px; }
-  .fav-stock-badge.not-seen { background: rgba(99,122,138,0.1); color: var(--muted); }
+  .variants-section{margin-top:16px;border-top:1px solid var(--border);padding-top:14px;}
+  .variants-section .lbl{font-family:var(--mono);font-size:10px;color:var(--text);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+  .variant-entry{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:rgba(245,200,66,0.05);border:1px solid rgba(245,200,66,0.15);border-radius:3px;margin-bottom:5px;}
+  .variant-name{font-family:var(--mono);font-size:11px;color:var(--warn);}
+  .variant-last{font-family:var(--mono);font-size:10px;color:var(--text);}
 
-  .fav-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.9; }
-  .fav-meta span { color: var(--text); }
+  .detail-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+  .action-btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;letter-spacing:0.5px;padding:8px 14px;border-radius:3px;cursor:pointer;text-decoration:none;border:1px solid;white-space:nowrap;transition:background 0.15s,color 0.15s;background:transparent;}
+  .action-btn.lookup{border-color:var(--border);color:var(--text);}
+  .action-btn.lookup:hover{border-color:var(--accent);color:var(--accent);}
+  .action-btn.fav-add{border-color:var(--star);color:var(--star);}
+  .action-btn.fav-add:hover{background:rgba(245,200,66,0.1);}
+  .action-btn.fav-remove{border-color:var(--star);color:var(--star);background:rgba(245,200,66,0.1);}
+  .action-btn.fav-maxed{border-color:var(--border);color:var(--muted);cursor:not-allowed;}
+  .action-btn.library-link{border-color:var(--border);color:var(--text);}
+  .action-btn.library-link:hover{border-color:var(--muted);color:#fff;}
 
-  /* ── Search ── */
-  .search-wrap { position: relative; margin-bottom: 24px; }
-  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 15px; pointer-events: none; }
-  #search { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: var(--sans); font-size: 14px; padding: 12px 16px 12px 42px; outline: none; transition: border-color 0.2s; }
-  #search:focus { border-color: var(--accent); }
-  #search::placeholder { color: var(--muted); }
-  .search-hint { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+  td{padding:11px 16px;vertical-align:middle;}
+  td:nth-child(n+3){text-align:center;}
+  td.star-cell{padding:11px 4px 11px 16px;width:30px;}
+  .star-btn{background:none;border:none;cursor:pointer;font-size:17px;line-height:1;padding:2px;color:var(--muted);transition:color 0.15s,transform 0.15s;display:flex;align-items:center;}
+  .star-btn:hover:not(.maxed){color:var(--star);transform:scale(1.2);}
+  .star-btn.starred{color:var(--star);}
+  .star-btn.maxed{color:#1e2d3d;cursor:default;}
 
-  .controls { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .controls span { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-right: 4px; }
-  .sort-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 5px 12px; cursor: pointer; border-radius: 2px; transition: border-color 0.15s, color 0.15s, background 0.15s; }
-  .sort-btn:hover  { border-color: var(--accent); color: var(--accent); }
-  .sort-btn.active { border-color: var(--accent); color: var(--bg); background: var(--accent); }
+  .fish-name{font-size:14px;color:#fff;}
+  .fish-name .match{color:var(--accent);}
+  .via-indicator{font-family:var(--mono);font-size:9px;color:var(--warn);opacity:0.9;margin-left:3px;}
+  .variant-count-badge{font-family:var(--mono);font-size:9px;color:var(--warn);opacity:0.8;margin-left:5px;}
 
-  /* ── Table ── */
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { background: var(--water); border-bottom: 1px solid var(--border); }
-  th { padding: 11px 16px; text-align: left; font-family: var(--mono); font-size: 10px; font-weight: 400; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap; }
-  th:nth-child(n+3) { text-align: center; }
+  .badge{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:2px;background:var(--water);color:var(--text);}
+  .badge.frequent{background:rgba(79,195,161,0.15);color:var(--accent);}
+  .badge.rare{background:rgba(240,133,90,0.1);color:var(--danger);}
+  .date-cell{font-family:var(--mono);font-size:12px;color:var(--text);}
+  .date-cell.recent{color:var(--accent);}
+  .next-pred{font-family:var(--mono);font-size:11px;color:var(--text);}
+  .next-pred.soon{color:var(--warn);}
+  .next-pred.overdue{color:var(--danger);}
+  .next-pred.na{color:var(--muted);}
 
-  tbody tr.fish-row { border-bottom: 1px solid var(--border); transition: background 0.12s; cursor: pointer; }
-  tbody tr.fish-row:last-of-type { border-bottom: none; }
-  tbody tr.fish-row:hover { background: var(--highlight); }
-  tbody tr.fish-row.soon-row { background: rgba(79,195,161,0.04); }
-  tbody tr.fish-row.expanded { background: rgba(79,195,161,0.07); border-bottom: none; }
+  /* Arrival sections */
+  .arrival-section{margin-bottom:32px;}
+  .arrival-header{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+  .arrival-date{font-family:var(--serif);font-size:18px;font-weight:600;color:#fff;}
+  .arrival-badge{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:2px;}
+  .arrival-badge.latest{background:rgba(79,195,161,0.15);color:var(--accent);border:1px solid var(--accent2);}
+  .arrival-badge.previous{background:rgba(143,168,187,0.1);color:var(--muted);border:1px solid var(--border);}
+  .arrival-badge.archive{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .arrival-count{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .arrival-section .table-wrap{border-left:3px solid transparent;}
+  .arrival-section.latest .table-wrap{border-left-color:var(--accent);}
+  .arrival-section.previous .table-wrap{border-left-color:var(--border);}
+  .arrival-section.archive .table-wrap{border-left-color:transparent;}
+  .section-empty{font-family:var(--mono);font-size:11px;color:var(--muted);padding:20px;text-align:center;}
+  .empty-state .fish-icon{font-size:40px;margin-bottom:16px;}
+  .empty-state h3{font-family:var(--serif);font-size:18px;color:var(--text);margin-bottom:8px;}
+  .empty-state p{font-size:13px;line-height:1.6;color:var(--text);}
+  .empty-state .hint{margin-top:24px;display:inline-block;font-family:var(--mono);font-size:11px;color:var(--accent);border:1px solid var(--accent2);padding:8px 16px;border-radius:2px;letter-spacing:1px;}
 
-  tr.detail-row td { padding: 0; border-bottom: 1px solid var(--border); }
-
-  .detail-panel { padding: 20px 20px 24px 56px; background: #0f1a23; animation: expandIn 0.18s ease; }
-  @keyframes expandIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
-  .detail-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 24px; align-items: start; }
-
-  .detail-block .lbl { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
-
-  .occ-timeline { display: flex; flex-wrap: wrap; gap: 5px; }
-  .occ-pip { font-family: var(--mono); font-size: 10px; background: var(--water); color: var(--muted); padding: 3px 8px; border-radius: 2px; border: 1px solid var(--border); }
-  .occ-pip.latest { background: rgba(79,195,161,0.15); color: var(--accent); border-color: var(--accent2); }
-
-  .detail-stats { line-height: 2.1; font-family: var(--mono); font-size: 12px; color: var(--muted); }
-  .detail-stats .val { color: var(--text); }
-  .detail-stats .good { color: var(--accent); }
-  .detail-stats .no { color: var(--muted); }
-
-  .detail-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
-  .action-btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px; padding: 8px 14px; border-radius: 3px; cursor: pointer; text-decoration: none; border: 1px solid; white-space: nowrap; transition: background 0.15s, color 0.15s; background: transparent; }
-  .action-btn.lookup { border-color: var(--border); color: var(--muted); }
-  .action-btn.lookup:hover { border-color: var(--accent); color: var(--accent); }
-  .action-btn.fav-add { border-color: var(--star); color: var(--star); }
-  .action-btn.fav-add:hover { background: rgba(245,200,66,0.1); }
-  .action-btn.fav-remove { border-color: var(--star); color: var(--star); background: rgba(245,200,66,0.1); }
-  .action-btn.fav-remove:hover { background: rgba(245,200,66,0.18); }
-  .action-btn.fav-maxed { border-color: var(--border); color: var(--muted); cursor: not-allowed; }
-
-  td { padding: 11px 16px; vertical-align: middle; }
-  td:nth-child(n+3) { text-align: center; }
-  td.star-cell { padding: 11px 4px 11px 16px; width: 30px; }
-
-  .star-btn { background: none; border: none; cursor: pointer; font-size: 17px; line-height: 1; padding: 2px; color: var(--muted); transition: color 0.15s, transform 0.15s; display: flex; align-items: center; }
-  .star-btn:hover:not(.maxed) { color: var(--star); transform: scale(1.2); }
-  .star-btn.starred { color: var(--star); }
-  .star-btn.maxed { color: #1e2d3d; cursor: default; }
-
-  .fish-name { font-size: 14px; color: #e8eef3; }
-  .fish-name .match { color: var(--accent); }
-
-  .badge { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 2px; background: var(--water); color: var(--muted); }
-  .badge.frequent { background: rgba(79,195,161,0.15); color: var(--accent); }
-  .badge.rare { background: rgba(240,133,90,0.1); color: var(--danger); }
-
-  .date-cell { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-  .date-cell.recent { color: var(--accent); }
-
-  .next-pred { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-  .next-pred.soon    { color: var(--warn); }
-  .next-pred.overdue { color: var(--danger); }
-  .next-pred.na      { color: #2e4050; }
-
-  .empty-state { padding: 60px 20px; text-align: center; color: var(--muted); }
-  .empty-state .fish-icon { font-size: 40px; margin-bottom: 16px; }
-  .empty-state h3 { font-family: var(--serif); font-size: 18px; color: var(--text); margin-bottom: 8px; }
-  .empty-state p { font-size: 13px; line-height: 1.6; }
-  .empty-state .hint { margin-top: 24px; display: inline-block; font-family: var(--mono); font-size: 11px; color: var(--accent); border: 1px solid var(--accent2); padding: 8px 16px; border-radius: 2px; letter-spacing: 1px; }
-
-  footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-  footer .attribution { font-family: var(--mono); font-size: 10px; color: var(--muted); }
-  footer .attribution a { color: var(--accent); text-decoration: none; }
-  footer .attribution a:hover { text-decoration: underline; }
-  .scrape-count { font-family: var(--mono); font-size: 10px; color: var(--muted); }
-  #no-data-msg { display: none; }
-  #no-data-msg.visible { display: block; }
+  footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  footer .attribution{font-family:var(--mono);font-size:10px;color:var(--text);}
+  footer .attribution a{color:var(--accent);text-decoration:none;}
+  footer .attribution a:hover{text-decoration:underline;}
+  .scrape-count{font-family:var(--mono);font-size:10px;color:var(--text);}
+  #no-data-msg{display:none;}
+  #no-data-msg.visible{display:block;}
 </style>
 </head>
 <body>
-
 <div class="bubbles" id="bubbles"></div>
-
 <div class="wrapper">
   <header>
     <div class="header-left">
@@ -202,7 +193,8 @@
         <span class="label">Last scraped</span>
         <span class="time" id="last-scrape-time">—</span>
       </div>
-      <button id="update-btn" onclick="triggerScrape()">⟳ Update Now</button>
+      <a class="nav-link" href="/library">📚 Library</a>
+      <a class="nav-link" href="/admin">⚙ Admin<span class="queue-badge" id="queue-badge">0</span></a>
     </div>
   </header>
 
@@ -211,24 +203,23 @@
   <div class="stats-strip">
     <div class="stat-card"><div class="val" id="stat-total">—</div><div class="lbl">Species tracked</div></div>
     <div class="stat-card"><div class="val" id="stat-recent">—</div><div class="lbl">Seen last 30 days</div></div>
-    <div class="stat-card"><div class="val" id="stat-pages">—</div><div class="lbl">Pages archived</div></div>
-    <div class="stat-card"><div class="val" id="stat-scrapes">—</div><div class="lbl">Scrape runs</div></div>
+    <div class="stat-card warn-card" id="queue-stat-card" style="display:none">
+      <div class="val" id="stat-queue">—</div>
+      <div class="lbl">Needs review &nbsp;<a href="/admin" style="color:var(--warn);font-size:10px;">→ Admin</a></div>
+    </div>
   </div>
 
-  <!-- Favorites watchlist -->
   <div id="favorites-section">
     <div class="section-label">★ &nbsp;Watching</div>
     <div class="favorites-grid" id="favorites-grid"></div>
   </div>
 
-  <!-- Search -->
   <div class="search-wrap">
     <span class="search-icon">⌕</span>
     <input type="text" id="search" placeholder="Search fish… (type 3+ letters)" autocomplete="off" oninput="onSearch(this.value)">
     <span class="search-hint" id="search-count"></span>
   </div>
 
-  <!-- Sort -->
   <div class="controls">
     <span>Sort:</span>
     <button class="sort-btn active" onclick="setSort('name',event)">Name</button>
@@ -237,29 +228,53 @@
     <button class="sort-btn" onclick="setSort('next',event)">Next Expected</button>
   </div>
 
-  <!-- Table -->
-  <div class="table-wrap">
-    <div id="no-data-msg">
-      <div class="empty-state">
-        <div class="fish-icon">🐡</div>
-        <h3>No fish data yet</h3>
-        <p>Hit <strong>Update Now</strong> to scrape the Aquatic Critter arrival pages.<br>It may take a minute to run through all the archived pages.</p>
-        <span class="hint">→ Click "Update Now" above to get started</span>
-      </div>
+  <!-- Arrival Section 1: Most recent -->
+  <div class="arrival-section latest" id="section-latest" style="display:none">
+    <div class="arrival-header">
+      <div class="arrival-date" id="date-latest">—</div>
+      <span class="arrival-badge latest">Latest Arrival</span>
+      <span class="arrival-count" id="count-latest"></span>
     </div>
-    <table id="fish-table" style="display:none">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Species</th>
-          <th>Occurrences</th>
-          <th>Last Seen</th>
-          <th>First Seen</th>
-          <th>Next Expected</th>
-        </tr>
-      </thead>
-      <tbody id="fish-tbody"></tbody>
-    </table>
+    <div class="table-wrap">
+      <table><thead><tr><th></th><th>Species</th><th>Occurrences</th><th>Last Seen</th><th>First Seen</th><th>Next Expected</th></tr></thead>
+      <tbody id="tbody-latest"></tbody></table>
+    </div>
+  </div>
+
+  <!-- Arrival Section 2: Previous -->
+  <div class="arrival-section previous" id="section-previous" style="display:none">
+    <div class="arrival-header">
+      <div class="arrival-date" id="date-previous">—</div>
+      <span class="arrival-badge previous">Previous Arrival</span>
+      <span class="arrival-count" id="count-previous"></span>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th></th><th>Species</th><th>Occurrences</th><th>Last Seen</th><th>First Seen</th><th>Next Expected</th></tr></thead>
+      <tbody id="tbody-previous"></tbody></table>
+    </div>
+  </div>
+
+  <!-- Arrival Section 3: Archive -->
+  <div class="arrival-section archive" id="section-archive">
+    <div class="arrival-header">
+      <div class="arrival-date">All Fish</div>
+      <span class="arrival-badge archive">Historical Archive</span>
+      <span class="arrival-count" id="count-archive"></span>
+    </div>
+    <div class="table-wrap">
+      <div id="no-data-msg">
+        <div class="empty-state">
+          <div class="fish-icon">🐡</div>
+          <h3>No fish data yet</h3>
+          <p>Head to <a href="/admin" style="color:var(--accent)">Admin</a> to run your first scrape.</p>
+          <span class="hint">→ /admin → Update Now</span>
+        </div>
+      </div>
+      <table id="fish-table" style="display:none">
+        <thead><tr><th></th><th>Species</th><th>Occurrences</th><th>Last Seen</th><th>First Seen</th><th>Next Expected</th></tr></thead>
+        <tbody id="fish-tbody"></tbody>
+      </table>
+    </div>
   </div>
 
   <footer>
@@ -269,353 +284,290 @@
 </div>
 
 <script>
-// ── State ──
-let allFish = [];
-let currentSort = 'name';
-let currentSearch = '';
-let scrapeCheckInterval = null;
-let expandedFish = null;
-let latestPageDate = null;
-const MAX_FAVS = 3;
-const FAVS_KEY = 'aquatic_favorites';
+let allFish=[], currentSort='name', currentSearch='', expandedFish=null, latestPageDate=null;
+const MAX_FAVS=3, FAVS_KEY='aquatic_favorites';
 
-// ── Favorites ──
-function getFavs()      { try { return JSON.parse(localStorage.getItem(FAVS_KEY)||'[]'); } catch { return []; } }
-function saveFavs(arr)  { localStorage.setItem(FAVS_KEY, JSON.stringify(arr)); }
-function isFav(name)    { return getFavs().includes(name); }
-
-function toggleFav(name, e) {
-  if (e) e.stopPropagation();
-  const favs = getFavs();
-  const idx = favs.indexOf(name);
-  if (idx >= 0) { favs.splice(idx,1); }
-  else { if (favs.length >= MAX_FAVS) return; favs.push(name); }
-  saveFavs(favs);
-  renderFavorites();
-  renderTable();
+function getFavs(){try{return JSON.parse(localStorage.getItem(FAVS_KEY)||'[]');}catch{return[];}}
+function saveFavs(a){localStorage.setItem(FAVS_KEY,JSON.stringify(a));}
+function toggleFav(name,e){
+  if(e)e.stopPropagation();
+  const f=getFavs(),i=f.indexOf(name);
+  if(i>=0)f.splice(i,1);else{if(f.length>=MAX_FAVS)return;f.push(name);}
+  saveFavs(f);renderFavorites();renderTable();
+}
+function isInStock(fish){
+  if(!latestPageDate||!fish.combinedLast)return false;
+  return(new Date(latestPageDate)-new Date(fish.combinedLast))/3600000<=48;
 }
 
-// ── In-stock check: fish seen within 48hrs of the latest page date ──
-function isInStock(fish) {
-  if (!latestPageDate || !fish.last) return false;
-  const diffHrs = (new Date(latestPageDate) - new Date(fish.last)) / 3600000;
-  return diffHrs >= 0 && diffHrs <= 48;
-}
-
-// ── Bubbles ──
 (function(){
-  const c = document.getElementById('bubbles');
-  for (let i=0;i<18;i++){
-    const b = document.createElement('div'); b.className='bubble';
-    const s = 4+Math.random()*18;
+  const c=document.getElementById('bubbles');
+  for(let i=0;i<18;i++){
+    const b=document.createElement('div');b.className='bubble';
+    const s=4+Math.random()*18;
     b.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${8+Math.random()*20}s;animation-delay:${Math.random()*12}s;`;
     c.appendChild(b);
   }
 })();
 
-// ── Date utils ──
-function daysBetween(d1,d2) { return Math.round(Math.abs(new Date(d2)-new Date(d1))/86400000); }
-function today() { return new Date().toISOString().slice(0,10); }
-function fmtDate(d) {
-  if (!d) return '—';
-  const [y,m,day] = d.split('-');
-  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+parseInt(day)+', '+y;
+function daysBetween(d1,d2){return Math.round(Math.abs(new Date(d2)-new Date(d1))/86400000);}
+function today(){return new Date().toISOString().slice(0,10);}
+function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+parseInt(day)+', '+y;}
+function daysAgoLabel(d){
+  if(!d)return null;const n=daysBetween(d,today());
+  if(n===0)return'today';if(n===1)return'yesterday';
+  if(n<7)return`${n}d ago`;if(n<30)return`${Math.round(n/7)}w ago`;
+  if(n<365)return`${Math.round(n/30)}mo ago`;return`${Math.round(n/365)}y ago`;
 }
-function daysAgoLabel(d) {
-  if (!d) return null;
-  const n = daysBetween(d, today());
-  if (n===0) return 'today';
-  if (n===1) return 'yesterday';
-  if (n<7)   return `${n}d ago`;
-  if (n<30)  return `${Math.round(n/7)}w ago`;
-  if (n<365) return `${Math.round(n/30)}mo ago`;
-  return `${Math.round(n/365)}y ago`;
-}
-
-// ── Prediction ──
-function predictNext(occ) {
-  if (!occ||occ.length<2) return null;
-  const s=[...occ].sort();
-  let gaps=[];
-  for(let i=1;i<s.length;i++) gaps.push(daysBetween(s[i-1],s[i]));
+function predictNext(occ){
+  if(!occ||occ.length<2)return null;
+  const s=[...occ].sort();let gaps=[];
+  for(let i=1;i<s.length;i++)gaps.push(daysBetween(s[i-1],s[i]));
   const avg=gaps.reduce((a,b)=>a+b,0)/gaps.length;
-  const p=new Date(s[s.length-1]); p.setDate(p.getDate()+Math.round(avg));
-  return { date:p.toISOString().slice(0,10), avgGap:Math.round(avg) };
+  const p=new Date(s[s.length-1]);p.setDate(p.getDate()+Math.round(avg));
+  return{date:p.toISOString().slice(0,10),avgGap:Math.round(avg)};
+}
+function freqLabel(n){
+  if(n===1)return'Rare — seen once';if(n===2)return'Uncommon';
+  if(n<=4)return'Occasional';if(n<=7)return'Regular';return'Frequent';
 }
 
-function freqLabel(n) {
-  if (n===1) return 'Rare — seen once';
-  if (n===2) return 'Uncommon';
-  if (n<=4)  return 'Occasional';
-  if (n<=7)  return 'Regular';
-  return 'Frequent';
-}
-
-// ── Build fish array ──
-function buildFishArray(data) {
-  latestPageDate = data.latest_page_date || null;
+function buildFishArray(data){
+  latestPageDate=data.latest_page_date||null;
   return Object.entries(data.fish||{}).map(([name,info])=>{
-    const occ=[...(info.occurrences||[])].sort();
-    const last=occ.length?occ[occ.length-1]:null;
-    const first=occ.length?occ[0]:null;
-    const count=occ.length;
-    const pred=predictNext(occ);
-    const daysSince=last?daysBetween(last,today()):9999;
+    const ownOcc=[...(info.occurrences||[])].sort();
+    const variants=info.variants||[];
+    const variantOcc=info.variant_occurrences||{};
+    const allDatesSet=new Set(ownOcc);
+    for(const v of variants)for(const d of(variantOcc[v]||[]))allDatesSet.add(d);
+    const combinedOcc=[...allDatesSet].sort();
+    const ownLast=ownOcc.length?ownOcc[ownOcc.length-1]:null;
+    const combinedLast=combinedOcc.length?combinedOcc[combinedOcc.length-1]:null;
+    const viaVariant=!!(combinedLast&&combinedLast!==ownLast);
+    let viaVariantName=null;
+    if(viaVariant)for(const v of variants){if((variantOcc[v]||[]).includes(combinedLast)){viaVariantName=v;break;}}
+    const pred=predictNext(combinedOcc);
+    const daysSince=combinedLast?daysBetween(combinedLast,today()):9999;
     const daysUntil=pred?Math.ceil((new Date(pred.date)-new Date(today()))/86400000):null;
-    return {name,occ,last,first,count,pred,daysSince,daysUntil};
+    const variantDetails=variants.map(v=>({name:v,occurrences:[...(variantOcc[v]||[])].sort(),last:(variantOcc[v]||[]).length?[...(variantOcc[v]||[])].sort().pop():null}));
+    return{name,ownOcc,combinedOcc,combinedLast,ownLast,viaVariant,viaVariantName,count:combinedOcc.length,first:combinedOcc[0]||null,pred,daysSince,daysUntil,variants,variantDetails};
   });
 }
 
-// ── Sort ──
-function sortFish(arr,m) {
+function sortFish(arr,m){
   const s=[...arr];
-  if(m==='name')   s.sort((a,b)=>a.name.localeCompare(b.name));
-  if(m==='count')  s.sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name));
-  if(m==='recent') s.sort((a,b)=>{ if(!a.last&&!b.last)return 0; if(!a.last)return 1; if(!b.last)return -1; return b.last.localeCompare(a.last); });
-  if(m==='next')   s.sort((a,b)=>(a.daysUntil??9999)-(b.daysUntil??9999));
+  if(m==='name')s.sort((a,b)=>a.name.localeCompare(b.name));
+  if(m==='count')s.sort((a,b)=>b.count-a.count||a.name.localeCompare(b.name));
+  if(m==='recent')s.sort((a,b)=>{if(!a.combinedLast&&!b.combinedLast)return 0;if(!a.combinedLast)return 1;if(!b.combinedLast)return-1;return b.combinedLast.localeCompare(a.combinedLast);});
+  if(m==='next')s.sort((a,b)=>(a.daysUntil??9999)-(b.daysUntil??9999));
   return s;
 }
+function highlight(t,q){if(!q)return t;return t.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'),'<span class="match">$1</span>');}
 
-function highlight(text,q) {
-  if(!q) return text;
-  return text.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),'<span class="match">$1</span>');
-}
-
-// ── Favorites render ──
-function renderFavorites() {
-  const favs = getFavs();
-  const section = document.getElementById('favorites-section');
-  const grid = document.getElementById('favorites-grid');
-  if (!favs.length) { section.classList.remove('visible'); return; }
+function renderFavorites(){
+  const favs=getFavs(),section=document.getElementById('favorites-section'),grid=document.getElementById('favorites-grid');
+  if(!favs.length){section.classList.remove('visible');return;}
   section.classList.add('visible');
-
-  grid.innerHTML = favs.map(name => {
-    const fish = allFish.find(f=>f.name===name);
-    if (!fish) return '';
-    const inStock = isInStock(fish);
-    const safeName = name.replace(/'/g,"\\'");
-
-    const stockBadge = inStock
-      ? `<div class="fav-stock-badge in-stock">● Likely in stock</div>`
-      : `<div class="fav-stock-badge not-seen">Not recently seen</div>`;
-
-    return `<div class="fav-card${inStock?' in-stock':''}" onclick="scrollToFish('${safeName}')">
-      <div class="fav-card-header">
-        <div class="fav-name">${fish.name}</div>
-        <button class="fav-unstar" onclick="toggleFav('${safeName}',event)" title="Remove from watchlist">★</button>
-      </div>
-      ${stockBadge}
-      <div class="fav-meta">
-        Last seen: <span>${fish.last ? daysAgoLabel(fish.last)+' · '+fmtDate(fish.last) : 'unknown'}</span><br>
-        Frequency: <span>${freqLabel(fish.count)} (${fish.count}×)</span>${fish.pred?`<br>Next expected: <span>~${fmtDate(fish.pred.date)}</span>`:''}
-      </div>
+  grid.innerHTML=favs.map(name=>{
+    const fish=allFish.find(f=>f.name===name);if(!fish)return'';
+    const inStock=isInStock(fish),safe=name.replace(/'/g,"\\'");
+    return`<div class="fav-card${inStock?' in-stock':''}" onclick="scrollToFish('${safe}')">
+      <div class="fav-card-header"><div class="fav-name">${fish.name}</div>
+      <button class="fav-unstar" onclick="toggleFav('${safe}',event)">★</button></div>
+      <div class="fav-stock-badge${inStock?' in-stock':' not-seen'}">${inStock?'● Likely in stock':'Not recently seen'}</div>
+      <div class="fav-meta">Last seen: <span>${fish.combinedLast?daysAgoLabel(fish.combinedLast)+' · '+fmtDate(fish.combinedLast):'unknown'}</span>${fish.viaVariant?` <em style="color:var(--warn);font-size:9px;">~via variant</em>`:''}<br>
+      Frequency: <span>${freqLabel(fish.count)} (${fish.count}×)</span>${fish.pred?`<br>Next expected: <span>~${fmtDate(fish.pred.date)}</span>`:''}</div>
     </div>`;
   }).join('');
 }
 
-// Scroll to fish row and expand it
-function scrollToFish(name) {
-  expandedFish = name;
-  renderTable();
-  setTimeout(()=>{
-    const el = document.querySelector(`tr.fish-row.expanded`);
-    if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
-  }, 60);
-}
+function scrollToFish(name){expandedFish=name;renderTable();setTimeout(()=>{const el=document.querySelector('tr.fish-row.expanded');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},60);}
 
-// ── Detail panel ──
-function buildDetailPanel(fish) {
-  const favs = getFavs();
-  const faved = favs.includes(fish.name);
-  const atMax = favs.length >= MAX_FAVS && !faved;
-  const safeName = fish.name.replace(/'/g,"\\'");
-
-  const pips = [...fish.occ].reverse().map((d,i)=>
-    `<span class="occ-pip${i===0?' latest':''}">${fmtDate(d)}</span>`
-  ).join('');
-
-  let avgGap = '—';
-  if (fish.occ.length >= 2) {
-    const s=[...fish.occ].sort();
-    let gaps=[];
-    for(let i=1;i<s.length;i++) gaps.push(daysBetween(s[i-1],s[i]));
-    avgGap = `~${Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length)} days`;
-  }
-
-  const inStock = isInStock(fish);
-  const stockVal = latestPageDate
-    ? (inStock ? `<span class="good">✓ Likely yes</span>` : `<span class="no">✗ Not recently</span>`)
-    : '<span class="no">—</span>';
-
-  const googleQ = encodeURIComponent(fish.name+' freshwater aquarium fish');
-
+function buildDetailPanel(fish){
+  const favs=getFavs(),faved=favs.includes(fish.name),atMax=favs.length>=MAX_FAVS&&!faved;
+  const safe=fish.name.replace(/'/g,"\\'");
+  const pips=[...fish.ownOcc].reverse().map((d,i)=>`<span class="occ-pip${i===0&&!fish.viaVariant?' latest':''}">${fmtDate(d)}</span>`).join('');
+  let avgGap='—';
+  if(fish.combinedOcc.length>=2){const s=[...fish.combinedOcc].sort();let g=[];for(let i=1;i<s.length;i++)g.push(daysBetween(s[i-1],s[i]));avgGap=`~${Math.round(g.reduce((a,b)=>a+b,0)/g.length)} days`;}
+  const inStock=isInStock(fish);
+  const stockVal=latestPageDate?(inStock?`<span class="good">✓ Likely yes</span>`:`<span class="no">✗ Not recently</span>`):'<span class="no">—</span>';
+  const googleQ=encodeURIComponent(fish.name+' freshwater aquarium fish');
   let favBtn;
-  if (faved)       favBtn = `<button class="action-btn fav-remove" onclick="toggleFav('${safeName}',event);renderTable();">★ In Watchlist</button>`;
-  else if (atMax)  favBtn = `<button class="action-btn fav-maxed" disabled>★ Watchlist full</button>`;
-  else             favBtn = `<button class="action-btn fav-add" onclick="toggleFav('${safeName}',event);renderTable();">☆ Watch This Fish</button>`;
-
-  return `<div class="detail-panel">
-    <div class="detail-grid">
-      <div class="detail-block">
-        <div class="lbl">Appearance history</div>
-        <div class="occ-timeline">${pips||'<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">No dates recorded</span>'}</div>
-      </div>
-      <div class="detail-block">
-        <div class="lbl">Statistics</div>
-        <div class="detail-stats">
-          Total appearances: <span class="val">${fish.count}×</span><br>
-          Pattern: <span class="val">${freqLabel(fish.count)}</span><br>
-          Avg interval: <span class="val">${avgGap}</span><br>
-          First seen: <span class="val">${fmtDate(fish.first)}</span><br>
-          In stock now: ${stockVal}
-        </div>
-      </div>
-      <div class="detail-actions">
-        <a class="action-btn lookup" href="https://www.google.com/search?q=${googleQ}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔍 Look Up</a>
-        ${favBtn}
+  if(faved)favBtn=`<button class="action-btn fav-remove" onclick="toggleFav('${safe}',event);renderTable();">★ In Watchlist</button>`;
+  else if(atMax)favBtn=`<button class="action-btn fav-maxed" disabled>★ Watchlist full</button>`;
+  else favBtn=`<button class="action-btn fav-add" onclick="toggleFav('${safe}',event);renderTable();">☆ Watch This Fish</button>`;
+  let variantsHtml='';
+  if(fish.variantDetails.length){
+    const rows=fish.variantDetails.map(v=>{
+      const isLatest=v.last===fish.combinedLast&&fish.viaVariant;
+      return`<div class="variant-entry"><span class="variant-name">${v.name}</span><span class="variant-last">${v.last?daysAgoLabel(v.last)+' · '+fmtDate(v.last):'—'}${isLatest?' <span style="color:var(--warn);font-size:9px;">← most recent</span>':''}</span></div>`;
+    }).join('');
+    variantsHtml=`<div class="variants-section"><div class="lbl">Variants / associated names</div>${rows}</div>`;
+  }
+  const ownLastNote=fish.viaVariant?`<br>Own last seen: <span class="val">${fish.ownLast?fmtDate(fish.ownLast):'never'}</span> <span class="via">(combined: ${fmtDate(fish.combinedLast)})</span>`:'';
+  return`<div class="detail-panel"><div class="detail-grid">
+    <div class="detail-block">
+      <div class="lbl">Own appearance history</div>
+      <div class="occ-timeline">${pips||'<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">No direct appearances</span>'}</div>
+      ${variantsHtml}
+    </div>
+    <div class="detail-block">
+      <div class="lbl">Statistics</div>
+      <div class="detail-stats">
+        Combined appearances: <span class="val">${fish.count}×</span><br>
+        Pattern: <span class="val">${freqLabel(fish.count)}</span><br>
+        Avg interval: <span class="val">${avgGap}</span><br>
+        First seen: <span class="val">${fmtDate(fish.first)}</span>${ownLastNote}<br>
+        In stock now: ${stockVal}
       </div>
     </div>
-  </div>`;
+    <div class="detail-actions">
+      <a class="action-btn lookup" href="https://www.google.com/search?q=${googleQ}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔍 Look Up</a>
+      ${favBtn}
+      <a class="action-btn library-link" href="/library" onclick="event.stopPropagation()">📚 Library</a>
+    </div>
+  </div></div>`;
 }
 
-// ── Render table ──
-function renderTable() {
-  const tbody  = document.getElementById('fish-tbody');
-  const table  = document.getElementById('fish-table');
-  const noData = document.getElementById('no-data-msg');
-  const hint   = document.getElementById('search-count');
+function bucketFish(fish){
+  const allDates = new Set();
+  for(const f of fish) for(const d of f.combinedOcc) allDates.add(d);
+  const topDates = [...allDates].sort((a,b)=>b.localeCompare(a));
+  const d1 = topDates[0] || null;
+  const d2 = topDates[1] || null;
 
-  const q = currentSearch.trim().toLowerCase();
-  let filtered = q.length >= 3 ? allFish.filter(f=>f.name.toLowerCase().includes(q)) : allFish;
-  const sorted = sortFish(filtered, currentSort);
+  const latest   = d1 ? fish.filter(f => f.combinedOcc.includes(d1)) : [];
+  const previous = d2 ? fish.filter(f => f.combinedOcc.includes(d2)) : [];
+  const archive  = fish; // all fish, no dedup
 
-  if (!allFish.length) {
-    table.style.display='none'; noData.classList.add('visible'); hint.textContent=''; return;
+  return{latest, previous, archive, d1, d2};
+}
+
+function renderTable(){
+  const noData=document.getElementById('no-data-msg');
+  const fishTable=document.getElementById('fish-table');
+  const hint=document.getElementById('search-count');
+
+  const q=currentSearch.trim().toLowerCase();
+
+  let filtered=allFish;
+  if(q.length>=3) filtered=allFish.filter(f=>f.name.toLowerCase().includes(q));
+
+  if(!allFish.length){
+    noData.classList.add('visible');fishTable.style.display='none';
+    document.getElementById('section-latest').style.display='none';
+    document.getElementById('section-previous').style.display='none';
+    hint.textContent='';
+    return;
   }
-  noData.classList.remove('visible'); table.style.display='';
+  noData.classList.remove('visible');fishTable.style.display='';
 
-  if (q.length>=3)      hint.textContent=`${sorted.length} match${sorted.length!==1?'es':''}`;
-  else if (q.length>0)  hint.textContent=`type ${3-q.length} more…`;
-  else                  hint.textContent=`${allFish.length} species`;
+  if(q.length>=3) hint.textContent=`${filtered.length} match${filtered.length!==1?'es':''}`;
+  else if(q.length>0) hint.textContent=`type ${3-q.length} more…`;
+  else hint.textContent=`${allFish.length} species`;
 
-  const favs = getFavs();
-  const atMax = favs.length >= MAX_FAVS;
+  const {latest,previous,archive,d1,d2}=bucketFish(filtered);
+  const sorted_archive=sortFish(archive,currentSort);
+  const sorted_latest=sortFish(latest,currentSort);
+  const sorted_previous=sortFish(previous,currentSort);
 
-  tbody.innerHTML = sorted.map(f => {
-    const faved = favs.includes(f.name);
-    const starDisabled = atMax && !faved;
-    const safeName = f.name.replace(/'/g,"\\'");
+  // Section 1
+  const secLatest=document.getElementById('section-latest');
+  if(latest.length){
+    secLatest.style.display='';
+    document.getElementById('date-latest').textContent=fmtDate(d1);
+    document.getElementById('count-latest').textContent=`${latest.length} species`;
+    document.getElementById('tbody-latest').innerHTML=sorted_latest.map(f=>buildRow(f,q)).join('');
+  } else { secLatest.style.display='none'; }
 
-    const starClass = faved ? 'star-btn starred' : starDisabled ? 'star-btn maxed' : 'star-btn';
-    const starTip   = faved ? 'Remove from watchlist' : starDisabled ? 'Watchlist full (3/3)' : 'Add to watchlist';
-    const starClick = starDisabled ? '' : `onclick="toggleFav('${safeName}',event)"`;
+  // Section 2
+  const secPrev=document.getElementById('section-previous');
+  if(previous.length){
+    secPrev.style.display='';
+    document.getElementById('date-previous').textContent=fmtDate(d2);
+    document.getElementById('count-previous').textContent=`${previous.length} species`;
+    document.getElementById('tbody-previous').innerHTML=sorted_previous.map(f=>buildRow(f,q)).join('');
+  } else { secPrev.style.display='none'; }
 
-    const displayName = q.length>=3 ? highlight(f.name,q) : f.name;
+  // Section 3
+  document.getElementById('count-archive').textContent=`${archive.length} species`;
+  document.getElementById('fish-tbody').innerHTML=sorted_archive.map(f=>buildRow(f,q)).join('');
 
-    let badgeCls = 'badge'; if(f.count>=4) badgeCls+=' frequent'; else if(f.count===1) badgeCls+=' rare';
-
-    const lastHtml = f.last
-      ? `<span class="date-cell${f.daysSince<=30?' recent':''}" title="${fmtDate(f.last)}">${daysAgoLabel(f.last)}</span>`
-      : '—';
-    const firstHtml = f.first ? `<span class="date-cell" title="${fmtDate(f.first)}">${fmtDate(f.first)}</span>` : '—';
-
-    let nextHtml = '<span class="next-pred na">—</span>';
-    if (f.pred) {
-      const d=f.daysUntil;
-      let cls='next-pred', lbl='';
-      if (d<0)       { cls+=' overdue'; lbl=`overdue ~${Math.abs(d)}d`; }
-      else if (d<=14){ cls+=' soon';    lbl=d===0?'today?':`~${d}d`; }
-      else           { lbl=fmtDate(f.pred.date); }
-      nextHtml=`<span class="${cls}" title="avg every ${f.pred.avgGap} days">${lbl}</span>`;
-    }
-
-    const isExpanded = expandedFish === f.name;
-    const rowCls = ['fish-row', (f.daysUntil!==null&&f.daysUntil>=0&&f.daysUntil<=7)?'soon-row':'', isExpanded?'expanded':''].filter(Boolean).join(' ');
-
-    const mainRow = `<tr class="${rowCls}" onclick="expandFish('${safeName}')">
-      <td class="star-cell"><button class="${starClass}" ${starClick} title="${starTip}">${faved?'★':'☆'}</button></td>
-      <td class="fish-name">${displayName}</td>
-      <td><span class="${badgeCls}">${f.count}×</span></td>
-      <td>${lastHtml}</td>
-      <td>${firstHtml}</td>
-      <td>${nextHtml}</td>
-    </tr>`;
-
-    const detailRow = isExpanded
-      ? `<tr class="detail-row"><td colspan="6">${buildDetailPanel(f)}</td></tr>`
-      : '';
-
-    return mainRow + detailRow;
-  }).join('');
+  // Attach expand listeners across all tbodies
+  ['tbody-latest','tbody-previous','fish-tbody'].forEach(id=>{
+    const tb=document.getElementById(id);
+    if(tb) tb.querySelectorAll('tr.fish-row').forEach(row=>{
+      row.addEventListener('click',()=>expandFish(row.dataset.name));
+    });
+  });
 
   renderFavorites();
 }
 
-function expandFish(name) {
-  expandedFish = expandedFish === name ? null : name;
-  renderTable();
+function buildRow(f,q){
+  const favs=getFavs(),faved=favs.includes(f.name),atMax=favs.length>=MAX_FAVS&&!faved;
+  const starClass=faved?'star-btn starred':atMax?'star-btn maxed':'star-btn';
+  const starTip=faved?'Remove from watchlist':atMax?'Watchlist full (3/3)':'Add to watchlist';
+  const displayName=q&&q.length>=3?highlight(f.name,q):f.name;
+  let badgeCls='badge';if(f.count>=4)badgeCls+=' frequent';else if(f.count===1)badgeCls+=' rare';
+  const via=f.viaVariant?`<span class="via-indicator" title="Via variant: ${f.viaVariantName||''}">~</span>`:'';
+  const lastHtml=f.combinedLast?`<span class="date-cell${f.daysSince<=30?' recent':''}">${daysAgoLabel(f.combinedLast)}</span>${via}`:'—';
+  const firstHtml=f.first?`<span class="date-cell">${fmtDate(f.first)}</span>`:'—';
+  let nextHtml='<span class="next-pred na">—</span>';
+  if(f.pred){const d=f.daysUntil;let cls='next-pred',lbl='';
+    if(d<0){cls+=' overdue';lbl=`overdue ~${Math.abs(d)}d`;}
+    else if(d<=14){cls+=' soon';lbl=d===0?'today?':`~${d}d`;}
+    else{lbl=fmtDate(f.pred.date);}
+    nextHtml=`<span class="${cls}" title="avg every ${f.pred.avgGap} days">${lbl}</span>`;}
+  const isExpanded=expandedFish===f.name;
+  const rowCls=['fish-row',(f.daysUntil!==null&&f.daysUntil>=0&&f.daysUntil<=7)?'soon-row':'',isExpanded?'expanded':''].filter(Boolean).join(' ');
+  const vBadge=f.variants.length?`<span class="variant-count-badge" title="${f.variants.join(', ')}">+${f.variants.length}v</span>`:'';
+  const starClick=atMax&&!faved?'':`data-starname="${f.name.replace(/"/g,'&quot;')}"`;
+
+  const mainRow=`<tr class="${rowCls}" data-name="${f.name.replace(/"/g,'&quot;')}">
+    <td class="star-cell"><button class="${starClass}" ${starClick} title="${starTip}">${faved?'★':'☆'}</button></td>
+    <td><span class="fish-name">${displayName}</span>${vBadge}</td>
+    <td><span class="${badgeCls}">${f.count}×</span></td>
+    <td>${lastHtml}</td><td>${firstHtml}</td><td>${nextHtml}</td>
+  </tr>`;
+  const detailRow=isExpanded?`<tr class="detail-row"><td colspan="6">${buildDetailPanel(f)}</td></tr>`:'';
+  return mainRow+detailRow;
 }
+function expandFish(name){expandedFish=expandedFish===name?null:name;renderTable();}
 
-// ── Load data ──
-async function loadData() {
-  try {
-    const data = await fetch('/api/data').then(r=>r.json());
-    allFish = buildFishArray(data);
-
-    const recentCount = allFish.filter(f=>f.last&&daysBetween(f.last,today())<=30).length;
-    document.getElementById('stat-total').textContent   = allFish.length;
-    document.getElementById('stat-recent').textContent  = recentCount;
-    document.getElementById('stat-pages').textContent   = (data.pages_scraped||[]).length;
-    document.getElementById('stat-scrapes').textContent = (data.scrape_log||[]).length;
-
-    const log = data.scrape_log||[];
-    if (log.length) {
-      const dt = new Date(log[log.length-1].timestamp);
-      document.getElementById('last-scrape-time').textContent =
-        dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+
-        dt.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-      document.getElementById('footer-scrape').textContent =
-        `${log.length} scrape runs · ${allFish.length} species found`;
-    } else {
-      document.getElementById('last-scrape-time').textContent = 'Never';
-    }
-
-    renderFavorites();
-    renderTable();
-    setStatus('ok', allFish.length>0 ? `${allFish.length} species tracked` : 'No data yet — click Update Now');
-  } catch(e) {
-    setStatus('err','Could not connect to local server — is server.py running?');
+// Star button delegation — attached after each render
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('.star-btn');
+  if(btn&&btn.dataset.starname){
+    e.stopPropagation();
+    toggleFav(btn.dataset.starname,e);
   }
+});
+
+async function loadData(){
+  try{
+    const data=await fetch('/api/data').then(r=>r.json());
+    allFish=buildFishArray(data);
+    const recentCount=allFish.filter(f=>f.combinedLast&&daysBetween(f.combinedLast,today())<=30).length;
+    document.getElementById('stat-total').textContent=allFish.length;
+    document.getElementById('stat-recent').textContent=recentCount;
+    const log=data.scrape_log||[];
+    if(log.length){
+      const dt=new Date(log[log.length-1].timestamp);
+      document.getElementById('last-scrape-time').textContent=dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+dt.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('footer-scrape').textContent=`${log.length} scrape runs · ${allFish.length} species`;
+    }else document.getElementById('last-scrape-time').textContent='Never';
+    const queueCount=(data.pending_queue||[]).length;
+    const badge=document.getElementById('queue-badge'),qStat=document.getElementById('queue-stat-card');
+    if(queueCount>0){badge.textContent=queueCount;badge.classList.add('visible');document.getElementById('stat-queue').textContent=queueCount;qStat.style.display='block';}
+    else{badge.classList.remove('visible');qStat.style.display='none';}
+    renderFavorites();renderTable();
+    setStatus('ok',allFish.length>0?`${allFish.length} species tracked`:'No data yet — head to Admin to scrape');
+  }catch(e){setStatus('err','Could not connect to local server — is server.py running?');}
 }
-
-// ── Scrape ──
-async function triggerScrape() {
-  const btn = document.getElementById('update-btn');
-  btn.classList.add('loading'); btn.textContent='⟳ Scraping…';
-  setStatus('busy','Scraping Aquatic Critter pages… this may take 30–60 seconds');
-  try { await fetch('/api/scrape'); }
-  catch(e) { setStatus('err','Could not start scrape — is server.py running?'); btn.classList.remove('loading'); btn.textContent='⟳ Update Now'; return; }
-
-  let polls=0;
-  scrapeCheckInterval = setInterval(async ()=>{
-    polls++;
-    try {
-      const data = await fetch('/api/data').then(r=>r.json());
-      const log = data.scrape_log||[];
-      if (log.length && ((Date.now()-new Date(log[log.length-1].timestamp))/1000<30 || polls>24)) {
-        clearInterval(scrapeCheckInterval);
-        btn.classList.remove('loading'); btn.textContent='⟳ Update Now';
-        await loadData();
-        setStatus('ok',`Scrape complete — ${log[log.length-1].new_fish} new species added`);
-      }
-    } catch(e) {}
-  }, 5000);
-}
-
-function setStatus(type,msg) { document.getElementById('status-bar').className=type; document.getElementById('status-text').textContent=msg; }
-function onSearch(val) { currentSearch=val; renderTable(); }
-function setSort(method,e) { currentSort=method; document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active')); e.target.classList.add('active'); renderTable(); }
-
+function setStatus(t,m){document.getElementById('status-bar').className=t;document.getElementById('status-text').textContent=m;}
+function onSearch(v){currentSearch=v;renderTable();}
+function setSort(m,e){currentSort=m;document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');renderTable();}
 loadData();
 </script>
 </body>

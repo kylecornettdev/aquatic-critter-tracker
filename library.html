@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aquatic Critter — Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0d1117;--surface:#131920;--border:#1e2d3d;--accent:#4fc3a1;--accent2:#2a7d6f;--water:#1a3a4a;--text:#e8eef3;--muted:#8fa8bb;--danger:#f0855a;--warn:#e8c55a;--star:#f5c842;--serif:'Playfair Display',Georgia,serif;--mono:'DM Mono',monospace;--sans:'DM Sans',system-ui,sans-serif;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 40% at 20% 80%,#0a2535 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 20%,#0d1f2d 0%,transparent 50%);pointer-events:none;z-index:0;}
+  .wrapper{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:0 24px 60px;}
+
+  header{padding:40px 0 32px;border-bottom:1px solid var(--border);margin-bottom:32px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .header-left h1{font-family:var(--serif);font-size:26px;font-weight:600;color:#fff;}
+  .header-left h1 span{color:var(--accent);}
+  .header-left .subtitle{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:6px;}
+  .nav-links{display:flex;gap:8px;}
+  .nav-link{font-family:var(--mono);font-size:11px;color:var(--text);text-decoration:none;border:1px solid var(--border);padding:7px 14px;border-radius:3px;transition:border-color 0.15s,color 0.15s;}
+  .nav-link:hover{border-color:var(--accent);color:var(--accent);}
+
+  #flash{font-family:var(--mono);font-size:11px;min-height:18px;margin-bottom:16px;}
+  #flash.ok{color:var(--accent);}
+  #flash.err{color:var(--danger);}
+
+  .search-wrap{position:relative;margin-bottom:20px;}
+  .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none;}
+  #search{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--sans);font-size:14px;padding:12px 16px 12px 42px;outline:none;transition:border-color 0.2s;}
+  #search:focus{border-color:var(--accent);}
+  #search::placeholder{color:var(--muted);}
+  .search-hint{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10px;color:var(--text);}
+
+  /* Table */
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead tr{background:var(--water);border-bottom:1px solid var(--border);}
+  th{padding:10px 16px;text-align:left;font-family:var(--mono);font-size:10px;font-weight:400;color:var(--text);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;}
+  th:nth-child(n+3){text-align:center;}
+
+  tbody tr.lib-row{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.12s;}
+  tbody tr.lib-row:hover{background:rgba(79,195,161,0.04);}
+  tbody tr.lib-row.has-variants{border-left:3px solid rgba(245,200,66,0.4);}
+  tbody tr.lib-row.has-variants:hover{background:rgba(245,200,66,0.03);}
+  tbody tr.lib-row.expanded{background:rgba(79,195,161,0.06);border-bottom:none;}
+  tbody tr.lib-row.expanded.has-variants{background:rgba(245,200,66,0.04);}
+  tr.expand-row td{padding:0;border-bottom:1px solid var(--border);}
+
+  td{padding:10px 16px;vertical-align:middle;}
+  td:nth-child(n+3){text-align:center;}
+
+  .fish-label{font-size:14px;color:#fff;}
+  .fish-label .match{color:var(--accent);}
+  .variant-chip{font-family:var(--mono);font-size:9px;color:var(--warn);background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.2);padding:1px 6px;border-radius:2px;margin-left:6px;}
+  .date-mono{font-family:var(--mono);font-size:11px;color:var(--text);}
+  .date-mono.recent{color:var(--accent);}
+  .count-badge{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:2px;background:var(--water);color:var(--text);}
+  .count-badge.hi{background:rgba(79,195,161,0.15);color:var(--accent);}
+
+  /* Expand panel */
+  .expand-panel{padding:20px 24px 24px;background:#0f1a23;animation:expandIn 0.15s ease;}
+  @keyframes expandIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+  .expand-grid{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:start;}
+
+  .ep-section-title{font-family:var(--mono);font-size:10px;color:var(--text);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+
+  .variant-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(245,200,66,0.05);border:1px solid rgba(245,200,66,0.12);border-radius:3px;margin-bottom:6px;}
+  .variant-row-name{font-family:var(--mono);font-size:12px;color:var(--warn);}
+  .variant-row-dates{font-family:var(--mono);font-size:10px;color:var(--text);margin:0 12px;flex:1;}
+  .unassoc-btn{background:transparent;border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:4px 8px;cursor:pointer;border-radius:2px;transition:border-color 0.15s,color 0.15s;white-space:nowrap;}
+  .unassoc-btn:hover{border-color:var(--danger);color:var(--danger);}
+  .no-variants{font-family:var(--mono);font-size:11px;color:var(--muted);padding:8px 0;}
+
+  /* Own occurrences mini-timeline */
+  .own-occ-row{margin-top:12px;}
+  .occ-pips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+  .occ-pip{font-family:var(--mono);font-size:9px;background:var(--water);color:var(--text);padding:2px 6px;border-radius:2px;border:1px solid var(--border);}
+
+  /* Merge panel */
+  .merge-panel{background:#0a1520;border:1px solid var(--border);border-radius:3px;padding:18px;min-width:280px;}
+  .merge-panel h4{font-family:var(--mono);font-size:10px;color:var(--text);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+  .merge-desc{font-size:12px;color:var(--text);margin-bottom:14px;line-height:1.5;}
+
+  /* Tabs: merge existing vs create new */
+  .merge-tabs{display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+  .merge-tab{flex:1;background:transparent;border:none;font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:7px;cursor:pointer;color:var(--text);transition:background 0.15s;}
+  .merge-tab.active{background:var(--water);color:#fff;}
+
+  .merge-search-wrap{position:relative;margin-bottom:8px;}
+  .merge-search{width:100%;background:var(--water);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 12px;outline:none;transition:border-color 0.2s;}
+  .merge-search:focus{border-color:var(--warn);}
+  .merge-search::placeholder{color:var(--muted);}
+  .merge-dropdown{position:absolute;top:100%;left:0;right:0;background:#0a1520;border:1px solid var(--border);border-top:none;border-radius:0 0 3px 3px;max-height:150px;overflow-y:auto;z-index:10;display:none;}
+  .merge-dropdown.open{display:block;}
+  .merge-option{padding:7px 12px;font-size:12px;cursor:pointer;color:var(--text);}
+  .merge-option:hover{background:var(--water);color:var(--warn);}
+  .merge-selected{font-family:var(--mono);font-size:11px;color:var(--muted);min-height:16px;margin-bottom:10px;}
+  .merge-selected.has-val{color:var(--warn);}
+
+  .new-name-input{width:100%;background:var(--water);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 12px;outline:none;margin-bottom:8px;transition:border-color 0.2s;}
+  .new-name-input:focus{border-color:var(--accent);}
+  .new-name-input::placeholder{color:var(--muted);}
+
+  .merge-btn{width:100%;padding:9px;border:1px solid var(--warn);background:transparent;color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:3px;transition:background 0.15s;margin-top:4px;}
+  .merge-btn:hover{background:rgba(232,197,90,0.1);}
+  .merge-btn:disabled{opacity:0.3;cursor:not-allowed;}
+  .create-merge-btn{border-color:var(--accent);color:var(--accent);}
+  .create-merge-btn:hover{background:rgba(79,195,161,0.1);}
+
+  .filter-btn{background:transparent;border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;cursor:pointer;border-radius:2px;transition:border-color 0.15s,color 0.15s,background 0.15s;}
+  .filter-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .filter-btn.active{border-color:var(--accent);color:var(--bg);background:var(--accent);}
+
+  /* Flagged dupe rows */
+  tbody tr.lib-row.flagged{box-shadow:inset -4px 0 0 0 #4fc3a1, inset -8px 0 12px -4px rgba(79,195,161,0.25);}
+  .flag-chip{font-family:var(--mono);font-size:9px;color:#0d1117;background:var(--accent);padding:2px 7px;border-radius:2px;margin-left:6px;vertical-align:middle;}
+  .clear-flag-btn{background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;cursor:pointer;border-radius:2px;transition:background 0.15s;white-space:nowrap;margin-top:10px;}
+  .clear-flag-btn:hover{background:rgba(79,195,161,0.15);}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <div class="header-left">
+      <h1>🐠 Aquatic Critter <span>Library</span></h1>
+      <div class="subtitle">Manage fish entries &amp; associations</div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="/admin">⚙ Admin</a>
+      <a class="nav-link" href="/">← Dashboard</a>
+    </div>
+  </header>
+
+  <div id="flash"></div>
+
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="search" placeholder="Search fish…" autocomplete="off" oninput="onSearch(this.value)">
+    <span class="search-hint" id="search-hint"></span>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all',event)">All</button>
+    <button class="filter-btn" data-filter="flagged" onclick="setFilter('flagged',event)">⚑ Flagged Dupes <span id="flag-count" style="display:none;background:var(--accent);color:var(--bg);font-size:9px;padding:1px 5px;border-radius:8px;margin-left:4px;"></span></button>
+    <button class="filter-btn" data-filter="variants" onclick="setFilter('variants',event)">Has Variants</button>
+  </div>
+
+  <div class="table-wrap" id="table-wrap">
+    <div class="empty-state" id="loading-state">
+      <div class="icon">🐡</div><h3>Loading library…</h3>
+    </div>
+    <table id="lib-table" style="display:none">
+      <thead>
+        <tr><th>Species</th><th>Occurrences</th><th>Last Seen</th><th>First Seen</th><th>Variants</th></tr>
+      </thead>
+      <tbody id="lib-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+let library=[], allFishNames=[], currentSearch='', currentFilter='all', expandedFish=null;
+let mergeTab={};     // fishName -> 'existing' | 'new'
+let mergeSelected={};// fishName -> selected existing fish name
+
+async function loadLibrary(){
+  try{
+    const data=await fetch('/api/library').then(r=>r.json());
+    library=data.library||[];allFishNames=data.fish_names||[];
+    renderTable();
+  }catch(e){
+    document.getElementById('loading-state').innerHTML='<div class="icon">⚠️</div><h3>Could not load — is server.py running?</h3>';
+  }
+}
+
+function fmtDate(d){if(!d)return'—';const[y,m,day]=d.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+parseInt(day)+', '+y;}
+function daysAgo(d){
+  if(!d)return'—';
+  const n=Math.round(Math.abs(new Date(new Date().toISOString().slice(0,10))-new Date(d))/86400000);
+  if(n===0)return'today';if(n===1)return'yesterday';
+  if(n<7)return`${n}d ago`;if(n<30)return`${Math.round(n/7)}w ago`;
+  if(n<365)return`${Math.round(n/30)}mo ago`;return`${Math.round(n/365)}y ago`;
+}
+function isRecent(d){return d&&Math.round(Math.abs(new Date(new Date().toISOString().slice(0,10))-new Date(d))/86400000)<=30;}
+function highlight(t,q){if(!q)return t;return t.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'),'<span class="match">$1</span>');}
+
+function getCombinedLast(e){
+  let all=[...(e.occurrences||[])];
+  for(const v of e.variants||[])all=[...all,...(v.occurrences||[])];
+  return all.length?[...all].sort().pop():null;
+}
+function getCombinedCount(e){
+  const s=new Set(e.occurrences||[]);
+  for(const v of e.variants||[])for(const d of v.occurrences||[])s.add(d);
+  return s.size;
+}
+
+function renderTable(){
+  const table=document.getElementById('lib-table'),loading=document.getElementById('loading-state'),hint=document.getElementById('search-hint');
+  const q=currentSearch.trim().toLowerCase();
+
+  let filtered=library;
+  if(q.length>=2)filtered=library.filter(e=>e.name.toLowerCase().includes(q)||(e.variants||[]).some(v=>v.name.toLowerCase().includes(q)));
+  if(currentFilter==='flagged')filtered=filtered.filter(e=>e.flagged_dupe);
+  if(currentFilter==='variants')filtered=filtered.filter(e=>(e.variants||[]).length>0);
+
+  const srt=[...filtered].sort((a,b)=>a.name.localeCompare(b.name));
+  hint.textContent=q.length>=2?`${srt.length} match${srt.length!==1?'es':''}`:`${library.length} entries`;
+
+  // Update flagged count badge
+  const flaggedCount=library.filter(e=>e.flagged_dupe).length;
+  const flagCountEl=document.getElementById('flag-count');
+  if(flagCountEl){flagCountEl.textContent=flaggedCount;flagCountEl.style.display=flaggedCount>0?'':'none';}
+
+  if(!library.length){loading.style.display='block';table.style.display='none';return;}
+  loading.style.display='none';table.style.display='';
+  const tbody=document.getElementById('lib-tbody');
+  tbody.innerHTML=srt.map(entry=>{
+    const cLast=getCombinedLast(entry),cCount=getCombinedCount(entry),varCount=(entry.variants||[]).length;
+    const rec=isRecent(cLast);
+    const displayName=q.length>=2?highlight(entry.name,q):entry.name;
+    const isExpanded=expandedFish===entry.name;
+    const hasV=varCount>0;
+    const isFlagged=entry.flagged_dupe;
+    const rowCls=['lib-row',hasV?'has-variants':'',isFlagged?'flagged':'',isExpanded?'expanded':''].filter(Boolean).join(' ');
+    const flagChip=isFlagged?`<span class="flag-chip">⚑ dupe?</span>`:'';
+    const mainRow=`<tr class="${rowCls}" data-name="${escAttr(entry.name)}">
+      <td><span class="fish-label">${displayName}</span>${hasV?`<span class="variant-chip">+${varCount}v</span>`:''}${flagChip}</td>
+      <td><span class="count-badge${cCount>=4?' hi':''}">${cCount}×</span></td>
+      <td><span class="date-mono${rec?' recent':''}">${cLast?daysAgo(cLast):'—'}</span></td>
+      <td><span class="date-mono">${fmtDate(entry.occurrences?.[0]||null)}</span></td>
+      <td><span class="date-mono">${varCount||'—'}</span></td>
+    </tr>`;
+    const expandRow=isExpanded?`<tr class="expand-row"><td colspan="5">${buildExpandPanel(entry)}</td></tr>`:'';
+    return mainRow+expandRow;
+  }).join('');
+
+  tbody.querySelectorAll('tr.lib-row').forEach(row=>{
+    row.addEventListener('click',()=>toggleExpand(row.dataset.name));
+  });
+  if(expandedFish) attachExpandPanelListeners();
+}
+
+function buildExpandPanel(entry){
+  const variantRows=(entry.variants||[]).map(v=>{
+    const vLast=v.occurrences&&v.occurrences.length?[...v.occurrences].sort().pop():null;
+    return`<div class="variant-row">
+      <span class="variant-row-name">${escHtml(v.name)}</span>
+      <span class="variant-row-dates">${vLast?daysAgo(vLast)+' · '+fmtDate(vLast):'no dates'} · ${v.occurrences?.length||0}×</span>
+      <button class="unassoc-btn" data-primary="${escAttr(entry.name)}" data-variant="${escAttr(v.name)}">Unassociate</button>
+    </div>`;
+  }).join('');
+  const variantsSection=(entry.variants||[]).length
+    ?`<div><div class="ep-section-title">Associated variants</div>${variantRows}</div>`
+    :`<div class="no-variants">No variants — expand to merge fish in</div>`;
+
+  const ownPips=(entry.occurrences||[]).slice(-10).map(d=>`<span class="occ-pip">${fmtDate(d)}</span>`).join('');
+  const flagSection=entry.flagged_dupe?`
+    <div style="margin-top:14px;padding:10px 12px;background:rgba(79,195,161,0.06);border:1px solid rgba(79,195,161,0.2);border-radius:3px;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">⚑ Flagged as potential duplicate</div>
+      ${entry.similar_to&&entry.similar_to.length?`<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px;">Similar to: ${entry.similar_to.map(s=>`<span style="color:var(--text)">${escHtml(s)}</span>`).join(', ')}</div>`:''}
+      <button class="clear-flag-btn" id="ep-clearflag">✓ Clear Flag — Not a Dupe</button>
+    </div>`:'';
+
+  const ownSection=`<div class="own-occ-row"><div class="ep-section-title">Own appearances</div><div class="occ-pips">${ownPips||'<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">none recorded directly</span>'}</div>
+    ${flagSection}
+    <button class="delete-entry-btn" id="ep-deletebtn" style="margin-top:10px;background:transparent;border:1px solid var(--danger);color:var(--danger);font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;cursor:pointer;border-radius:2px;">🗑 Delete this entry</button>
+  </div>`;
+
+  // Merge panel — uses a stable ID since only one row expands at a time
+  const tab=mergeTab[entry.name]||'existing';
+  const excluded=new Set([(entry.name||'').toLowerCase(),...(entry.variants||[]).map(v=>v.name.toLowerCase())]);
+  const mergeOptions=allFishNames.filter(n=>!excluded.has(n.toLowerCase()));
+  const curSel=mergeSelected[entry.name]||'';
+
+  const existingPanel=`
+    <div id="ep-existing" style="${tab==='existing'?'':'display:none'}">
+      <div class="merge-desc">Select an existing fish to merge INTO <strong style="color:#fff">${escHtml(entry.name)}</strong>. It will be absorbed — dates and variants fold in.</div>
+      <div class="merge-search-wrap">
+        <input type="text" class="merge-search" id="ep-msearch" placeholder="Search fish to merge…" autocomplete="off" value="${escHtml(curSel)}">
+        <div class="merge-dropdown" id="ep-mdd">
+          ${mergeOptions.slice(0,100).map(n=>`<div class="merge-option" data-fishname="${escAttr(n)}">${escHtml(n)}</div>`).join('')}
+        </div>
+      </div>
+      <div class="merge-selected${curSel?' has-val':''}" id="ep-msel">${curSel?`Merge "${escHtml(curSel)}" into this`:'Nothing selected'}</div>
+      <button class="merge-btn" id="ep-mbtn" ${curSel?'':'disabled'}>Merge In →</button>
+    </div>`;
+
+  const newPanel=`
+    <div id="ep-new" style="${tab==='new'?'':'display:none'}">
+      <div class="merge-desc">Create a new base entry and merge <strong style="color:#fff">${escHtml(entry.name)}</strong> into it. Useful when you need a parent like "Crowntail Betta".</div>
+      <input type="text" class="new-name-input" id="ep-newname" placeholder="New base fish name…">
+      <button class="merge-btn create-merge-btn" id="ep-createbtn">Create &amp; Merge →</button>
+    </div>`;
+
+  const mergeSection=`<div class="merge-panel">
+    <h4>Merge</h4>
+    <div class="merge-tabs">
+      <button class="merge-tab${tab==='existing'?' active':''}" data-tab="existing">Existing fish</button>
+      <button class="merge-tab${tab==='new'?' active':''}" data-tab="new">Create new base</button>
+    </div>
+    ${existingPanel}
+    ${newPanel}
+  </div>`;
+
+  return`<div class="expand-panel"><div class="expand-grid">
+    <div>${variantsSection}${ownSection}</div>
+    ${mergeSection}
+  </div></div>`;
+}
+
+function switchMergeTab(tab, e){
+  if(e)e.stopPropagation();
+  if(expandedFish)mergeTab[expandedFish]=tab;
+  const ep=document.getElementById('ep-existing'),np=document.getElementById('ep-new');
+  if(ep)ep.style.display=tab==='existing'?'':'none';
+  if(np)np.style.display=tab==='new'?'':'none';
+  const card=e?.target?.closest('.merge-panel');
+  if(card)card.querySelectorAll('.merge-tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='existing'?0:1)));
+}
+
+function filterMergePanel(val){
+  if(!expandedFish)return;
+  const entry=library.find(e=>e.name===expandedFish);
+  const excluded=new Set([expandedFish.toLowerCase(),...(entry?.variants||[]).map(v=>v.name.toLowerCase())]);
+  const opts=allFishNames.filter(n=>!excluded.has(n.toLowerCase()));
+  const filtered=val.length>=1?opts.filter(n=>n.toLowerCase().includes(val.toLowerCase())):opts;
+  const dd=document.getElementById('ep-mdd');
+  if(dd){
+    dd.innerHTML=filtered.slice(0,100).map(n=>`<div class="merge-option" data-fishname="${escAttr(n)}">${escHtml(n)}</div>`).join('');
+    dd.classList.add('open');
+    attachMergeOptionClicks();
+  }
+}
+
+function attachMergeOptionClicks(){
+  document.querySelectorAll('#ep-mdd .merge-option').forEach(opt=>{
+    opt.addEventListener('click',ev=>{ev.stopPropagation();selectMergePanel(opt.dataset.fishname);});
+  });
+}
+
+function selectMergePanel(name){
+  if(!expandedFish)return;
+  mergeSelected[expandedFish]=name;
+  const input=document.getElementById('ep-msearch'),sel=document.getElementById('ep-msel'),btn=document.getElementById('ep-mbtn'),dd=document.getElementById('ep-mdd');
+  if(input)input.value=name;
+  if(sel){sel.textContent=`Merge "${name}" into this`;sel.className='merge-selected has-val';}
+  if(btn)btn.disabled=false;
+  if(dd)dd.classList.remove('open');
+}
+
+document.addEventListener('click',e=>{
+  const dd=document.getElementById('ep-mdd');
+  if(dd&&dd.classList.contains('open')){
+    const wrap=dd.closest('.merge-search-wrap');
+    if(wrap&&!wrap.contains(e.target))dd.classList.remove('open');
+  }
+});
+
+async function doMerge(e){
+  if(e)e.stopPropagation();
+  if(!expandedFish)return;
+  const source=mergeSelected[expandedFish],target=expandedFish;
+  if(!source)return;
+  if(!confirm(`Merge "${source}" into "${target}"?\n\nThis will:\n• Add all of "${source}"'s dates to "${target}"\n• Move its variants to "${target}"\n• Delete the "${source}" entry\n• Future scrapes of "${source}" → auto-resolve to "${target}"`))return;
+  try{
+    const result=await fetch('/api/merge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source,target})}).then(r=>r.json());
+    if(result.status==='ok'){
+      setFlash('ok',`"${source}" merged into "${target}"`);
+      delete mergeSelected[target];allFishNames=result.fish_names||allFishNames;
+      await loadLibrary();expandedFish=target;renderTable();
+    }else setFlash('err',result.message||'Merge failed');
+  }catch(ex){setFlash('err','Server error');}
+}
+
+async function doCreateMerge(e){
+  if(e)e.stopPropagation();
+  if(!expandedFish)return;
+  const input=document.getElementById('ep-newname'),newName=input?input.value.trim():'';
+  const source=expandedFish;
+  if(!newName){setFlash('err','Please enter a name for the new base entry');return;}
+  if(newName.toLowerCase()===source.toLowerCase()){setFlash('err','New name is the same as current');return;}
+  if(!confirm(`Create "${newName}" and merge "${source}" into it?\n\n"${source}" will become a variant of "${newName}".`))return;
+  try{
+    const result=await fetch('/api/create_and_merge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({new_name:newName,sources:[source]})}).then(r=>r.json());
+    if(result.status==='ok'){
+      setFlash('ok',`"${newName}" created. "${source}" is now a variant.`);
+      allFishNames=result.fish_names||allFishNames;
+      await loadLibrary();expandedFish=newName;renderTable();
+    }else setFlash('err',result.message||'Failed');
+  }catch(ex){setFlash('err','Server error');}
+}
+
+async function unassociate(primary,variant,e){
+  if(e)e.stopPropagation();
+  if(!confirm(`Unassociate "${variant}" from "${primary}"?\nIt becomes its own individual entry.`))return;
+  try{
+    const result=await fetch('/api/unassociate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({primary,variant})}).then(r=>r.json());
+    if(result.status==='ok'){
+      setFlash('ok',`"${variant}" is now individual`);allFishNames=result.fish_names||allFishNames;
+      await loadLibrary();expandedFish=primary;renderTable();
+    }else setFlash('err',result.message||'Failed');
+  }catch(ex){setFlash('err','Server error');}
+}
+
+async function doDelete(e){
+  if(e)e.stopPropagation();
+  if(!expandedFish)return;
+  const name=expandedFish;
+  if(!confirm(`Permanently delete "${name}"?\n\nThis cannot be undone. The entry and all its occurrence history will be removed.`))return;
+  try{
+    const result=await fetch('/api/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})}).then(r=>r.json());
+    if(result.status==='ok'){
+      setFlash('ok',`"${name}" deleted`);
+      allFishNames=result.fish_names||allFishNames;
+      expandedFish=null;
+      await loadLibrary();
+    }else setFlash('err',result.message||'Delete failed');
+  }catch(ex){setFlash('err','Server error');}
+}
+
+async function clearFlag(e){
+  if(e)e.stopPropagation();
+  if(!expandedFish)return;
+  const name=expandedFish;
+  try{
+    const result=await fetch('/api/clear_flag',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})}).then(r=>r.json());
+    if(result.status==='ok'){
+      setFlash('ok',`Flag cleared for "${name}"`);
+      await loadLibrary();expandedFish=name;renderTable();
+    }else setFlash('err',result.message||'Failed');
+  }catch(ex){setFlash('err','Server error');}
+}
+
+function attachExpandPanelListeners(){
+  // Unassociate buttons
+  document.querySelectorAll('.unassoc-btn').forEach(btn=>{
+    btn.addEventListener('click',e=>{e.stopPropagation();unassociate(btn.dataset.primary,btn.dataset.variant,e);});
+  });
+  // Merge tab buttons
+  document.querySelectorAll('.merge-tab[data-tab]').forEach(btn=>{
+    btn.addEventListener('click',e=>{e.stopPropagation();switchMergeTab(btn.dataset.tab,e);});
+  });
+  // Merge search input
+  const msearch=document.getElementById('ep-msearch');
+  if(msearch){
+    msearch.addEventListener('input',()=>filterMergePanel(msearch.value));
+    msearch.addEventListener('focus',()=>{const dd=document.getElementById('ep-mdd');if(dd)dd.classList.add('open');attachMergeOptionClicks();});
+  }
+  // Merge In button
+  const mbtn=document.getElementById('ep-mbtn');
+  if(mbtn)mbtn.addEventListener('click',e=>doMerge(e));
+  // Clear flag button
+  const cfbtn=document.getElementById('ep-clearflag');
+  if(cfbtn)cfbtn.addEventListener('click',e=>clearFlag(e));
+  // Delete button
+  const dbtn=document.getElementById('ep-deletebtn');
+  if(dbtn)dbtn.addEventListener('click',e=>doDelete(e));
+  // Create & Merge button
+  const cbtn=document.getElementById('ep-createbtn');
+  if(cbtn)cbtn.addEventListener('click',e=>doCreateMerge(e));
+  // Attach initial dropdown option clicks
+  attachMergeOptionClicks();
+}
+
+function toggleExpand(name){expandedFish=expandedFish===name?null:name;mergeSelected={};mergeTab={};renderTable();}
+function onSearch(v){currentSearch=v;renderTable();}
+function setFilter(f,e){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));e.target.closest('.filter-btn').classList.add('active');renderTable();}
+function setFlash(cls,msg){const el=document.getElementById('flash');el.textContent=msg;el.className=cls;setTimeout(()=>{if(el.textContent===msg){el.textContent='';el.className='';}},5000);}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+loadLibrary();
+</script>
+</body>
+</html>
